@@ -373,6 +373,54 @@ end -- section variable (M : ModuleCat S)
 
 /-! ### Natural transformation and iso -/
 
+/-- Inner diagram chase for `pushforwardSpecTildeHom` naturality, extracted
+from the `where` clause to avoid elaboration rigidity. The `where`-clause
+context freezes implicit type arguments in a non-reducible form, blocking
+`rw` on `NatTrans.naturality` and `Functor.map_comp`. In a standalone lemma
+these rewrites succeed because the elaborator infers types from scratch. -/
+private lemma pushforwardSpecTildeHom_naturality_aux
+    (M N : ModuleCat S) (g : M ⟶ N) :
+    (ModuleCat.restrictScalars f.hom).map g ≫
+      (ModuleCat.restrictScalars f.hom).map
+        ((tilde.adjunction (R := S)).unit.app N) ≫
+        (pushforwardΓRestrictScalarsIso f).inv.app
+          ((tilde.functor S).obj N) =
+    ((ModuleCat.restrictScalars f.hom).map
+        ((tilde.adjunction (R := S)).unit.app M) ≫
+      (pushforwardΓRestrictScalarsIso f).inv.app
+        ((tilde.functor S).obj M)) ≫
+      moduleSpecΓFunctor.map
+        ((pushforward (Spec.map f)).map
+          ((tilde.functor S).map g)) := by
+  -- Normalize unit.naturality: strip (𝟭 _).map and (F ⋙ G).map
+  have h_unit : g ≫ (tilde.adjunction (R := S)).unit.app N =
+      (tilde.adjunction (R := S)).unit.app M ≫
+        moduleSpecΓFunctor.map ((tilde.functor S).map g) := by
+    simpa only [Functor.id_map, Functor.comp_map] using
+      (tilde.adjunction (R := S)).unit.naturality g
+  -- Normalize inv.naturality: expand (F ⋙ G).map to G.map (F.map ...)
+  have h_inv : (ModuleCat.restrictScalars f.hom).map
+        (moduleSpecΓFunctor.map ((tilde.functor S).map g)) ≫
+      (pushforwardΓRestrictScalarsIso f).inv.app
+        ((tilde.functor S).obj N) =
+    (pushforwardΓRestrictScalarsIso f).inv.app
+        ((tilde.functor S).obj M) ≫
+      moduleSpecΓFunctor.map
+        ((pushforward (Spec.map f)).map
+          ((tilde.functor S).map g)) := by
+    simpa only [Functor.comp_map] using
+      (pushforwardΓRestrictScalarsIso f).inv.naturality
+        ((tilde.functor S).map g)
+  rw [← Category.assoc,
+    ← (ModuleCat.restrictScalars f.hom).map_comp, h_unit]
+  -- Close with exact: defEq at .default handles Functor.comp_obj mismatches
+  -- that block rw/simp at .reducible transparency
+  exact (congrArg (· ≫ _)
+    ((ModuleCat.restrictScalars f.hom).map_comp _ _)).trans
+    ((Category.assoc _ _ _).trans
+      ((congrArg (_ ≫ ·) h_inv).trans
+        (Category.assoc _ _ _).symm))
+
 /-- The natural transformation `(N_R)~ ⟶ ψ_* Ñ` for Part (2) of
 [Stacks 01I9]. Each component is the adjunct (via `tilde_R ⊣ Γ_R`)
 of `N_R →[unit] (Γ_S(Ñ))_R →[iso⁻¹] Γ_R(ψ_* Ñ)`. -/
@@ -393,15 +441,7 @@ def pushforwardSpecTildeHom :
     rw [← Adjunction.homEquiv_naturality_left_symm,
       ← Adjunction.homEquiv_naturality_right_symm]
     congr 1
-    rw [← Category.assoc,
-      ← (ModuleCat.restrictScalars f.hom).map_comp]
-    erw [(tilde.adjunction (R := S)).unit.naturality g]
-    simp only [Functor.comp_map]
-    erw [(ModuleCat.restrictScalars f.hom).map_comp]
-    rw [Category.assoc, Category.assoc]
-    erw [(pushforwardΓRestrictScalarsIso f).inv.naturality
-      ((tilde.functor S).map g)]
-    rfl
+    exact pushforwardSpecTildeHom_naturality_aux f M N g
 
 /-- Each component of `pushforwardSpecTildeHom` is an isomorphism,
 because it decomposes as `tilde.map(unit ≫ iso⁻¹) ≫ counit` where
@@ -435,7 +475,7 @@ lemma isIso_pushforwardSpecTildeHom_app (M : ModuleCat S) :
         ((tilde.functor S).obj M))) :=
     Functor.map_isIso _ _
   simp only [pushforwardSpecTildeHom, Functor.comp_obj]
-  -- homEquiv_counit: exact uses definitional equality to see through (homEquiv).symm
+  -- homEquiv_counit: exact uses defEq to see through (homEquiv).symm
   exact @IsIso.comp_isIso _ _ _ _ _ _ _
     ‹IsIso ((tilde.functor R).map
       ((ModuleCat.restrictScalars f.hom).map
