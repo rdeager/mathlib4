@@ -5,7 +5,6 @@ Authors: Richard Eager
 -/
 module
 
-public import Mathlib.AlgebraicGeometry.Modules.Sheaf
 public import Mathlib.AlgebraicGeometry.Modules.Tilde
 public import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
 
@@ -37,7 +36,7 @@ and applies `Adjunction.leftAdjointUniq`. The key auxiliary result
 
 ## References
 
-- [Stacks, Tag 01I9](https://stacks.math.columbia.edu/tag/01I9)
+- [Stacks, Tag 01I9][stacks-project]
 
 ## Tags
 
