@@ -68,20 +68,14 @@ def pushforwardΓRestrictScalarsIso :
         ↑((pushforward (Spec.map f) ⋙ moduleSpecΓFunctor).obj M) :=
       (M.val.obj (op ⊤)).isModule
     LinearEquiv.toModuleIso (R := ↑R) (m₁ := inst₁) (m₂ := inst₂)
-    (X₁ := (pushforward (Spec.map f) ⋙ moduleSpecΓFunctor).obj M)
-    (X₂ := (moduleSpecΓFunctor ⋙ ModuleCat.restrictScalars f.hom).obj M)
     { __ := AddEquiv.refl _
       map_smul' := fun r x => by
-        -- Both `inst₁` and `inst₂` reduce (by rfl) to `nativeMod.smul` via different
-        -- ring hom paths from R to Γ(Spec S, 𝒪_S), equated by `ΓSpecIso_inv_naturality`.
-        change @SMul.smul _ _ inst₁.toSMul r x = @SMul.smul _ _ inst₂.toSMul r x
-        have h₁ : @SMul.smul _ _ inst₁.toSMul r x =
-            nativeMod.smul (((Scheme.ΓSpecIso R).inv ≫ (Spec.map f).appTop).hom r) x := rfl
-        have h₂ : @SMul.smul _ _ inst₂.toSMul r x =
-            nativeMod.smul ((f ≫ (Scheme.ΓSpecIso S).inv).hom r) x := rfl
-        exact h₁.trans ((congrArg (nativeMod.smul · x) (congrArg
-          (fun k : R ⟶ Scheme.Γ.obj (op (Spec S)) => k.hom r)
-          (Scheme.ΓSpecIso_inv_naturality f).symm)).trans h₂.symm) })
+        -- Both actions factor through `nativeMod.smul` via ring hom paths
+        -- equated by `ΓSpecIso_inv_naturality`.
+        change nativeMod.smul (((Scheme.ΓSpecIso R).inv ≫ (Spec.map f).appTop).hom r) x =
+            nativeMod.smul ((f ≫ (Scheme.ΓSpecIso S).inv).hom r) x
+        exact congrArg (fun k => nativeMod.smul (k.hom r) x)
+          (Scheme.ΓSpecIso_inv_naturality f).symm })
     (fun g => by ext; rfl)
 
 /-- Part (1) of [Stacks 01I9] (Lemma 26.7.3). For a ring homomorphism `f : R ⟶ S`,
