@@ -42,7 +42,7 @@ This bypasses the need for `SheafOfModules.Presentation` by using
 
 ## References
 
-- [Stacks, Tag 01I9](https://stacks.math.columbia.edu/tag/01I9)
+- [Stacks, Tag 01I9][stacks-project]
 
 ## Tags
 
@@ -200,8 +200,8 @@ theorem pushforward_res_isLocalizedModule (r : R) :
         ((modulesSpecToSheaf.obj
           ((tilde.functor S).obj M)).obj.map
           (eqToHom heq).op)) := by
-    -- erw needed: universe/coercion mismatch in
-    -- inv ≫ map
+    -- erw needed: dependent type mismatch in inv ≫ map prevents
+    -- rw/simp from matching IsIso.eq_inv_comp or Functor.map_comp
     erw [IsIso.eq_inv_comp]
     erw [← Functor.map_comp]
   rw [hfac]
@@ -239,8 +239,8 @@ theorem pushforward_res_isLocalizedModule (r : R) :
 
 /-! ### Smul compatibility across universe levels -/
 
--- erw needed: unfolds 3 layers of restrictScalars.smul_def
--- for universe-bridge SMul
+-- Both sides' R-actions factor through the native O_Y(ψ⁻¹(U))-module
+-- via `StructureSheaf.toOpen_comp_comap_apply`.
 lemma pushforward_smul_eq (U : (Spec R).Opens)
     (s : R)
     (x : ((modulesSpecToSheaf.obj
@@ -255,12 +255,17 @@ lemma pushforward_smul_eq (U : (Spec R).Opens)
             ((Opens.map
               (Spec.map f).base).obj U))))
       _ instHSMul s x := by
-  erw [ModuleCat.restrictScalars.smul_def,
-    ModuleCat.restrictScalars.smul_def,
-    ModuleCat.restrictScalars.smul_def]
-  congr 1
-  exact StructureSheaf.toOpen_comp_comap_apply
-    f.hom U s
+  letI nativeMod : Module
+      ↑((Spec S).ringCatSheaf.obj.obj
+        (Opposite.op ((Opens.map (Spec.map f).base).obj U)))
+      ↑((modulesSpecToSheaf.obj
+        ((pushforward (Spec.map f)).obj
+          ((tilde.functor S).obj M))).obj.obj
+        (Opposite.op U)) :=
+    (((tilde.functor S).obj M).val.obj
+      (Opposite.op ((Opens.map (Spec.map f).base).obj U))).isModule
+  exact congrArg (fun r => nativeMod.smul r (show _ from x))
+    (StructureSheaf.toOpen_comp_comap_apply f.hom U s)
 
 /-! ### Pushforward restriction at correct universe -/
 
@@ -403,7 +408,8 @@ def pushforwardSpecTildeHom :
         ((tilde.functor S).obj M))
   naturality M N g := by
     simp only [Functor.comp_obj, Functor.comp_map]
-    -- erw needed: homEquiv_naturality through universe coercion
+    -- erw needed: homEquiv_naturality/unit.naturality/map_comp/inv.naturality
+    -- through functor composition dependent types (upstream transparency gap)
     erw [← Adjunction.homEquiv_naturality_left_symm]
     erw [← Adjunction.homEquiv_naturality_right_symm]
     congr 1
