@@ -388,9 +388,9 @@ def pushforwardSpecTildeHom :
         ((tilde.functor S).obj M))
   naturality M N g := by
     simp only [Functor.comp_obj, Functor.comp_map]
-    -- erw needed: unit.naturality/map_comp/inv.naturality
+    -- erw needed: homEquiv_naturality_*_symm/unit.naturality/map_comp/inv.naturality
     -- through functor composition dependent types (upstream transparency gap)
-    rw [← Adjunction.homEquiv_naturality_left_symm,
+    erw [← Adjunction.homEquiv_naturality_left_symm,
       ← Adjunction.homEquiv_naturality_right_symm]
     congr 1
     rw [← Category.assoc,
