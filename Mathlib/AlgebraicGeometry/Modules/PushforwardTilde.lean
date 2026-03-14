@@ -100,16 +100,12 @@ namespace AlgebraicGeometry.Scheme.Modules
 -- and Scheme → TopCat → Type coercion chains.
 -- TODO: upstream to Mathlib.Topology.Opens or
 -- Mathlib.AlgebraicGeometry.Scheme
-instance orderTopOpensPrimeSpectrum
-    {A : Type u} [CommRing A] :
+instance orderTopOpensPrimeSpectrum {A : Type u} [CommRing A] :
     OrderTop (TopologicalSpace.Opens (PrimeSpectrum A)) :=
-  (inferInstance :
-    CompleteLattice _).toBoundedOrder.toOrderTop
+  (inferInstance : CompleteLattice _).toBoundedOrder.toOrderTop
 
 instance orderTopOpensSpec {T : CommRingCat.{u}} :
-    OrderTop ((Spec T).Opens) :=
-  (inferInstance :
-    CompleteLattice _).toBoundedOrder.toOrderTop
+    OrderTop ((Spec T).Opens) := orderTopOpensPrimeSpectrum
 
 /-! ### Smul compatibility -/
 
@@ -121,9 +117,8 @@ lemma restrictScalars_pow_smul_eq {N : ModuleCat S}
     (r : R) (n : ℕ)
     (x : ((ModuleCat.restrictScalars f.hom).obj N)) :
     r ^ n • x = (f.hom r) ^ n • x := by
-  have h : ∀ (a : R), a • x = f.hom a • x :=
-    fun a => by
-    exact ModuleCat.restrictScalars.smul_def (R := ↑R) (f := f.hom) a x
+  have h : ∀ a : R, a • x = f.hom a • x :=
+    fun a ↦ ModuleCat.restrictScalars.smul_def (R := ↑R) (f := f.hom) a x
   rw [h, map_pow]
 
 /-! ### Localization compatibility -/
@@ -255,16 +250,9 @@ lemma pushforward_smul_eq (U : (Spec R).Opens)
             ((Opens.map
               (Spec.map f).base).obj U))))
       _ instHSMul s x := by
-  letI nativeMod : Module
-      ↑((Spec S).ringCatSheaf.obj.obj
-        (Opposite.op ((Opens.map (Spec.map f).base).obj U)))
-      ↑((modulesSpecToSheaf.obj
-        ((pushforward (Spec.map f)).obj
-          ((tilde.functor S).obj M))).obj.obj
-        (Opposite.op U)) :=
-    (((tilde.functor S).obj M).val.obj
+  letI nativeMod := (((tilde.functor S).obj M).val.obj
       (Opposite.op ((Opens.map (Spec.map f).base).obj U))).isModule
-  exact congrArg (fun r => nativeMod.smul r (show _ from x))
+  exact congrArg (fun r ↦ nativeMod.smul r (show _ from x))
     (StructureSheaf.toOpen_comp_comap_apply f.hom U s)
 
 /-! ### Pushforward restriction at correct universe -/
@@ -339,9 +327,8 @@ lemma mem_essImage_tilde_of_basicOpen_localizations
       (_root_.Opens.grothendieckTopology
         (PrimeSpectrum R)) :=
     @TopCat.Opens.coverDense_inducedFunctor
-      (TopCat.of (PrimeSpectrum R)) R
-      PrimeSpectrum.basicOpen
-      PrimeSpectrum.isBasis_basic_opens
+      (TopCat.of (PrimeSpectrum R)) _
+      _ PrimeSpectrum.isBasis_basic_opens
   suffices IsIso α from
     SpecModulesToSheafFullyFaithful (R := R)
       |>.isIso_of_isIso_map _
@@ -364,17 +351,10 @@ lemma mem_essImage_tilde_of_basicOpen_localizations
     let hres := (modulesSpecToSheaf.obj P).obj.map
       (homOfLE (le_top :
         PrimeSpectrum.basicOpen r ≤ ⊤)).op
-    have inst_g : IsLocalizedModule (.powers r)
-        g.hom := inferInstance
-    have inst_h : IsLocalizedModule (.powers r)
-        hres.hom := h r
     exact @IsLocalizedModule.isIso_of_factoring
-      _ _ _ _ _ (.powers r) g hres inst_g inst_h
-      (α.hom.app
-        (Opposite.op
-          (PrimeSpectrum.basicOpen r)))
-      (LinearMap.ext fun x =>
-        congrArg (fun φ => φ.hom x) tri)
+      _ _ _ _ _ (.powers r) g hres inferInstance (h r)
+      (α.hom.app (Opposite.op (PrimeSpectrum.basicOpen r)))
+      (LinearMap.ext fun x ↦ congrArg (fun φ ↦ φ.hom x) tri)
   exact NatIso.isIso_of_isIso_app _
 
 /-! ### Essential image membership -/
@@ -437,17 +417,17 @@ lemma isIso_pushforwardSpecTildeHom_app (M : ModuleCat S) :
     Functor.map_isIso _ _
   haveI : IsIso ((pushforwardΓRestrictScalarsIso f).inv.app
       ((tilde.functor S).obj M)) := by
-    have : IsIso (pushforwardΓRestrictScalarsIso f).inv := inferInstance
+    haveI : IsIso (pushforwardΓRestrictScalarsIso f).inv := inferInstance
     exact inferInstance
   haveI : IsIso ((ModuleCat.restrictScalars f.hom).map
       ((tilde.adjunction (R := S)).unit.app M) ≫
     (pushforwardΓRestrictScalarsIso f).inv.app
-      ((tilde.functor S).obj M)) := by
-    have h1 := ‹IsIso ((ModuleCat.restrictScalars f.hom).map
+      ((tilde.functor S).obj M)) :=
+    @IsIso.comp_isIso _ _ _ _ _ _ _
+      ‹IsIso ((ModuleCat.restrictScalars f.hom).map
         ((tilde.adjunction (R := S)).unit.app M))›
-    have h2 := ‹IsIso ((pushforwardΓRestrictScalarsIso f).inv.app
+      ‹IsIso ((pushforwardΓRestrictScalarsIso f).inv.app
         ((tilde.functor S).obj M))›
-    exact @IsIso.comp_isIso _ _ _ _ _ _ _ h1 h2
   haveI : IsIso ((tilde.functor R).map
       ((ModuleCat.restrictScalars f.hom).map
         ((tilde.adjunction (R := S)).unit.app M) ≫
@@ -457,15 +437,15 @@ lemma isIso_pushforwardSpecTildeHom_app (M : ModuleCat S) :
   simp only [pushforwardSpecTildeHom, Functor.comp_obj]
   -- erw needed: homEquiv_counit through universe coercion
   erw [Adjunction.homEquiv_counit]
-  have h1 := ‹IsIso ((tilde.functor R).map
+  exact @IsIso.comp_isIso _ _ _ _ _ _ _
+    ‹IsIso ((tilde.functor R).map
       ((ModuleCat.restrictScalars f.hom).map
         ((tilde.adjunction (R := S)).unit.app M) ≫
       (pushforwardΓRestrictScalarsIso f).inv.app
         ((tilde.functor S).obj M)))›
-  have h2 := ‹IsIso ((tilde.adjunction (R := R)).counit.app
+    ‹IsIso ((tilde.adjunction (R := R)).counit.app
       ((pushforward (Spec.map f)).obj
         ((tilde.functor S).obj M)))›
-  exact @IsIso.comp_isIso _ _ _ _ _ _ _ h1 h2
 
 /-- Part (2) of [Stacks 01I9] (Lemma 26.7.3). For a ring
 homomorphism `f : R ⟶ S`, pushing forward along `Spec.map f`
@@ -475,9 +455,9 @@ functor. -/
 def pushforwardSpecTildeIso :
     ModuleCat.restrictScalars f.hom ⋙ tilde.functor R ≅
     tilde.functor S ⋙ pushforward (Spec.map f) :=
-  haveI := fun M => isIso_pushforwardSpecTildeHom_app f M
+  haveI := fun M ↦ isIso_pushforwardSpecTildeHom_app f M
   NatIso.ofComponents
-    (fun M => asIso ((pushforwardSpecTildeHom f).app M))
-    (fun g => (pushforwardSpecTildeHom f).naturality g)
+    (fun M ↦ asIso ((pushforwardSpecTildeHom f).app M))
+    (fun g ↦ (pushforwardSpecTildeHom f).naturality g)
 
 end AlgebraicGeometry.Scheme.Modules
