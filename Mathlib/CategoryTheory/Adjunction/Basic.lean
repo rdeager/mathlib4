@@ -363,6 +363,7 @@ structure CoreHomEquiv (F : C ⥤ D) (G : D ⥤ C) where
 namespace CoreHomEquiv
 
 attribute [simp] homEquiv_naturality_left_symm homEquiv_naturality_right
+  homEquiv_naturality_right_symm
 
 variable {F : C ⥤ D} {G : D ⥤ C} (adj : CoreHomEquiv F G) {X' X : C} {Y Y' : D}
 
