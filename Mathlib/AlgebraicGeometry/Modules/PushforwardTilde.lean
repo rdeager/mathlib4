@@ -417,39 +417,8 @@ lemma isIso_pushforwardSpecTildeHom_app (M : ModuleCat S) :
       ((pushforward (Spec.map f)).obj
         ((tilde.functor S).obj M))) :=
     isIso_fromTildeΓ_iff.mpr (mem_essImage_pushforward_tilde f M)
-  haveI : IsIso ((ModuleCat.restrictScalars f.hom).map
-      ((tilde.adjunction (R := S)).unit.app M)) :=
-    Functor.map_isIso _ _
-  haveI : IsIso ((pushforwardΓRestrictScalarsIso f).inv.app
-      ((tilde.functor S).obj M)) := by
-    haveI : IsIso (pushforwardΓRestrictScalarsIso f).inv := inferInstance
-    exact inferInstance
-  haveI : IsIso ((ModuleCat.restrictScalars f.hom).map
-      ((tilde.adjunction (R := S)).unit.app M) ≫
-    (pushforwardΓRestrictScalarsIso f).inv.app
-      ((tilde.functor S).obj M)) :=
-    @IsIso.comp_isIso _ _ _ _ _ _ _
-      ‹IsIso ((ModuleCat.restrictScalars f.hom).map
-        ((tilde.adjunction (R := S)).unit.app M))›
-      ‹IsIso ((pushforwardΓRestrictScalarsIso f).inv.app
-        ((tilde.functor S).obj M))›
-  haveI : IsIso ((tilde.functor R).map
-      ((ModuleCat.restrictScalars f.hom).map
-        ((tilde.adjunction (R := S)).unit.app M) ≫
-      (pushforwardΓRestrictScalarsIso f).inv.app
-        ((tilde.functor S).obj M))) :=
-    Functor.map_isIso _ _
   simp only [pushforwardSpecTildeHom, Functor.comp_obj]
-  -- homEquiv_counit: exact uses defEq to see through (homEquiv).symm
-  exact @IsIso.comp_isIso _ _ _ _ _ _ _
-    ‹IsIso ((tilde.functor R).map
-      ((ModuleCat.restrictScalars f.hom).map
-        ((tilde.adjunction (R := S)).unit.app M) ≫
-      (pushforwardΓRestrictScalarsIso f).inv.app
-        ((tilde.functor S).obj M)))›
-    ‹IsIso ((tilde.adjunction (R := R)).counit.app
-      ((pushforward (Spec.map f)).obj
-        ((tilde.functor S).obj M)))›
+  exact IsIso.comp_isIso
 
 /-- Part (2) of [Stacks 01I9] (Lemma 26.7.3). For a ring
 homomorphism `f : R ⟶ S`, pushing forward along `Spec.map f`
