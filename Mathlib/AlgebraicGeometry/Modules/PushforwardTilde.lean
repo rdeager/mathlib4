@@ -195,10 +195,9 @@ theorem pushforward_res_isLocalizedModule (r : R) :
         ((modulesSpecToSheaf.obj
           ((tilde.functor S).obj M)).obj.map
           (eqToHom heq).op)) := by
-    -- erw needed: dependent type mismatch in inv ≫ map prevents
-    -- rw/simp from matching IsIso.eq_inv_comp or Functor.map_comp
-    erw [IsIso.eq_inv_comp]
-    erw [← Functor.map_comp]
+    exact (IsIso.eq_inv_comp (α := (ModuleCat.restrictScalars f.hom).map
+      (tilde.toOpen M ⊤))).mpr
+      ((ModuleCat.restrictScalars f.hom).map_comp _ _).symm
   rw [hfac]
   haveI : IsLocalizedModule (.powers r)
       ((((ModuleCat.restrictScalars f.hom).map
