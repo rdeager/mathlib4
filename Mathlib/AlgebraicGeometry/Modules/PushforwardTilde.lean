@@ -88,7 +88,6 @@ lemma restrictScalars_pow_smul_eq {N : ModuleCat S}
 
 /-! ### Localization compatibility -/
 
--- The R-linear tilde.toOpen is a localization at {r^n}
 instance isLocalizedModule_restrictScalars_toOpen
     (r : R) :
     IsLocalizedModule (.powers r)
@@ -124,9 +123,7 @@ instance isLocalizedModule_restrictScalars_toOpen
 
 /-! ### Pushforward restriction is a localization -/
 
-/-- The restriction of the pushforward of `M~` to `D(r)` is a localization at `r`.
-This factors through `inv(toOpen ⊤) ≫ toOpen(D(fr)) ≫ eqToHom`, requiring heavy defeq
-reasoning. -/
+/-- The restriction of the pushforward of `M~` to `D(r)` is a localization at `r`. -/
 theorem pushforward_res_isLocalizedModule (r : R) :
     IsLocalizedModule (.powers r)
       ((ModuleCat.restrictScalars f.hom).map
@@ -198,8 +195,6 @@ theorem pushforward_res_isLocalizedModule (r : R) :
 
 /-! ### Smul compatibility across universe levels -/
 
--- Both sides' R-actions factor through the native O_Y(ψ⁻¹(U))-module
--- via `StructureSheaf.toOpen_comp_comap_apply`.
 lemma pushforward_smul_eq (U : (Spec R).Opens)
     (s : R)
     (x : ((modulesSpecToSheaf.obj
@@ -263,17 +258,9 @@ theorem pushforward_res_isLocalizedModule_direct
 
 /-! ### Affine criterion for essential image of tilde -/
 
-/-- A sheaf of modules `P` on `Spec R` lies in the essential
-image of `tilde.functor R` if the restriction map from global
-sections to each basic open `D(r)` is a localization at the
-submonoid `{rⁿ}`. This is the affine criterion for
-quasi-coherence: it reduces the sheaf-theoretic question to an
-algebra statement about localizations on a basis.
-
-The proof shows `fromTildeΓ` is an isomorphism by cover-density
-of basic opens: on each `D(r)`, the comparison map factors
-through two localizations of `Γ(Spec R, P)` at `r`, hence is
-an isomorphism by `IsLocalizedModule.isIso_of_factoring`. -/
+/-- A sheaf of modules `P` on `Spec R` lies in the essential image of `tilde.functor R` if
+the restriction map from global sections to each basic open `D(r)` is a localization at `{rⁿ}`.
+The proof uses cover-density of basic opens and `IsLocalizedModule.isIso_of_factoring`. -/
 lemma mem_essImage_tilde_of_basicOpen_localizations
     {R : CommRingCat.{u}} (P : (Spec R).Modules)
     (h : ∀ r : R,
@@ -323,10 +310,7 @@ lemma mem_essImage_tilde_of_basicOpen_localizations
 
 /-! ### Essential image membership -/
 
-/-- `f_*(tilde_S(M))` lies in the essential image of `tilde_R`.
-This follows from `mem_essImage_tilde_of_basicOpen_localizations`
-once we verify the localization hypothesis via
-`pushforward_res_isLocalizedModule_direct`. -/
+/-- `f_*(tilde_S(M))` lies in the essential image of `tilde_R`. -/
 lemma mem_essImage_pushforward_tilde :
     (tilde.functor R).essImage
       ((pushforward (Spec.map f)).obj
@@ -338,11 +322,8 @@ end -- section variable (M : ModuleCat S)
 
 /-! ### Natural transformation and iso -/
 
-/-- Inner diagram chase for `pushforwardSpecTildeHom` naturality, extracted
-from the `where` clause to avoid elaboration rigidity. The `where`-clause
-context freezes implicit type arguments in a non-reducible form, blocking
-`rw` on `NatTrans.naturality` and `Functor.map_comp`. In a standalone lemma
-these rewrites succeed because the elaborator infers types from scratch. -/
+/-- Inner diagram chase for `pushforwardSpecTildeHom` naturality, extracted from the `where`
+clause to avoid elaboration rigidity with `rw` on `NatTrans.naturality`. -/
 private lemma pushforwardSpecTildeHom_naturality_aux
     (M N : ModuleCat S) (g : M ⟶ N) :
     (ModuleCat.restrictScalars f.hom).map g ≫
@@ -357,13 +338,11 @@ private lemma pushforwardSpecTildeHom_naturality_aux
       moduleSpecΓFunctor.map
         ((pushforward (Spec.map f)).map
           ((tilde.functor S).map g)) := by
-  -- Normalize unit.naturality: strip (𝟭 _).map and (F ⋙ G).map
   have h_unit : g ≫ (tilde.adjunction (R := S)).unit.app N =
       (tilde.adjunction (R := S)).unit.app M ≫
         moduleSpecΓFunctor.map ((tilde.functor S).map g) := by
     simpa only [Functor.id_map, Functor.comp_map] using
       (tilde.adjunction (R := S)).unit.naturality g
-  -- Normalize inv.naturality: expand (F ⋙ G).map to G.map (F.map ...)
   have h_inv : (ModuleCat.restrictScalars f.hom).map
         (moduleSpecΓFunctor.map ((tilde.functor S).map g)) ≫
       (pushforwardΓRestrictScalarsIso f).inv.app
@@ -378,8 +357,6 @@ private lemma pushforwardSpecTildeHom_naturality_aux
         ((tilde.functor S).map g)
   rw [← Category.assoc,
     ← (ModuleCat.restrictScalars f.hom).map_comp, h_unit]
-  -- Close with exact: defEq at .default handles Functor.comp_obj mismatches
-  -- that block rw/simp at .reducible transparency
   exact (congrArg (· ≫ _)
     ((ModuleCat.restrictScalars f.hom).map_comp _ _)).trans
     ((Category.assoc _ _ _).trans
@@ -400,7 +377,6 @@ def pushforwardSpecTildeHom :
         ((tilde.functor S).obj M))
   naturality M N g := by
     simp only [Functor.comp_obj, Functor.comp_map]
-    -- change re-normalizes hidden type args stuck by `where`-clause elaboration
     change (tilde.functor R).map _ ≫ (Adjunction.homEquiv _ _ _).symm _ =
       (Adjunction.homEquiv _ _ _).symm _ ≫ _
     rw [← Adjunction.homEquiv_naturality_left_symm,
@@ -417,8 +393,36 @@ lemma isIso_pushforwardSpecTildeHom_app (M : ModuleCat S) :
       ((pushforward (Spec.map f)).obj
         ((tilde.functor S).obj M))) :=
     isIso_fromTildeΓ_iff.mpr (mem_essImage_pushforward_tilde f M)
+  haveI : IsIso ((ModuleCat.restrictScalars f.hom).map
+      ((tilde.adjunction (R := S)).unit.app M)) := Functor.map_isIso _ _
+  haveI : IsIso ((pushforwardΓRestrictScalarsIso f).inv.app
+      ((tilde.functor S).obj M)) := by
+    haveI : IsIso (pushforwardΓRestrictScalarsIso f).inv := inferInstance
+    exact inferInstance
+  haveI : IsIso ((ModuleCat.restrictScalars f.hom).map
+      ((tilde.adjunction (R := S)).unit.app M) ≫
+    (pushforwardΓRestrictScalarsIso f).inv.app
+      ((tilde.functor S).obj M)) :=
+    @IsIso.comp_isIso _ _ _ _ _ _ _
+      ‹IsIso ((ModuleCat.restrictScalars f.hom).map
+        ((tilde.adjunction (R := S)).unit.app M))›
+      ‹IsIso ((pushforwardΓRestrictScalarsIso f).inv.app
+        ((tilde.functor S).obj M))›
+  haveI : IsIso ((tilde.functor R).map
+      ((ModuleCat.restrictScalars f.hom).map
+        ((tilde.adjunction (R := S)).unit.app M) ≫
+      (pushforwardΓRestrictScalarsIso f).inv.app
+        ((tilde.functor S).obj M))) := Functor.map_isIso _ _
   simp only [pushforwardSpecTildeHom, Functor.comp_obj]
-  exact IsIso.comp_isIso
+  exact @IsIso.comp_isIso _ _ _ _ _ _ _
+    ‹IsIso ((tilde.functor R).map
+      ((ModuleCat.restrictScalars f.hom).map
+        ((tilde.adjunction (R := S)).unit.app M) ≫
+      (pushforwardΓRestrictScalarsIso f).inv.app
+        ((tilde.functor S).obj M)))›
+    ‹IsIso ((tilde.adjunction (R := R)).counit.app
+      ((pushforward (Spec.map f)).obj
+        ((tilde.functor S).obj M)))›
 
 /-- Part (2) of [Stacks 01I9] (Lemma 26.7.3). For a ring
 homomorphism `f : R ⟶ S`, pushing forward along `Spec.map f`
