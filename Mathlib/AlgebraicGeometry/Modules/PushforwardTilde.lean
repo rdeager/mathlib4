@@ -436,8 +436,7 @@ lemma isIso_pushforwardSpecTildeHom_app (M : ModuleCat S) :
         ((tilde.functor S).obj M))) :=
     Functor.map_isIso _ _
   simp only [pushforwardSpecTildeHom, Functor.comp_obj]
-  -- erw needed: homEquiv_counit through universe coercion
-  erw [Adjunction.homEquiv_counit]
+  -- homEquiv_counit: exact uses definitional equality to see through (homEquiv).symm
   exact @IsIso.comp_isIso _ _ _ _ _ _ _
     ‹IsIso ((tilde.functor R).map
       ((ModuleCat.restrictScalars f.hom).map
