@@ -123,9 +123,7 @@ lemma restrictScalars_pow_smul_eq {N : ModuleCat S}
     r ^ n • x = (f.hom r) ^ n • x := by
   have h : ∀ (a : R), a • x = f.hom a • x :=
     fun a => by
-    -- erw needed: restrictScalars.smul_def not
-    -- definitionally equal through CommRingCat → Type
-    erw [ModuleCat.restrictScalars.smul_def]
+    exact ModuleCat.restrictScalars.smul_def (R := ↑R) (f := f.hom) a x
   rw [h, map_pow]
 
 /-! ### Localization compatibility -/
@@ -257,9 +255,6 @@ lemma pushforward_smul_eq (U : (Spec R).Opens)
             ((Opens.map
               (Spec.map f).base).obj U))))
       _ instHSMul s x := by
-  -- erw needed: restrictScalars.smul_def not
-  -- definitionally equal through CommRingCat → Type
-  -- coercion at 3 universe levels
   erw [ModuleCat.restrictScalars.smul_def,
     ModuleCat.restrictScalars.smul_def,
     ModuleCat.restrictScalars.smul_def]
@@ -300,18 +295,14 @@ theorem pushforward_res_isLocalizedModule_direct
     refine ⟨⟨m, s⟩, ?_⟩
     obtain ⟨_, n, rfl⟩ := s
     change r ^ n • y = _
-    -- erw needed: same universe bridge
-    erw [pushforward_smul_eq f M
-      (PrimeSpectrum.basicOpen r) (r ^ n) y]
-    exact ht
+    exact (pushforward_smul_eq f M
+      (PrimeSpectrum.basicOpen r) (r ^ n) y).trans ht
   · intro m₁ m₂ h
     obtain ⟨⟨_, n, rfl⟩, ht⟩ := hexists h
     refine ⟨⟨r ^ n, n, rfl⟩, ?_⟩
     change r ^ n • m₁ = r ^ n • m₂
-    -- erw needed: same universe bridge
-    erw [pushforward_smul_eq f M ⊤ (r ^ n) m₁,
-      pushforward_smul_eq f M ⊤ (r ^ n) m₂]
-    exact ht
+    exact (pushforward_smul_eq f M ⊤ (r ^ n) m₁).trans
+      (ht.trans (pushforward_smul_eq f M ⊤ (r ^ n) m₂).symm)
 
 /-! ### Affine criterion for essential image of tilde -/
 
