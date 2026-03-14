@@ -5,6 +5,7 @@ Authors: Richard Eager
 -/
 module
 
+public import Mathlib.Algebra.Category.ModuleCat.Localization
 public import Mathlib.AlgebraicGeometry.Modules.PullbackTilde
 
 /-!
@@ -59,47 +60,11 @@ universe u
 
 variable {R S : CommRingCat.{u}} (f : R ⟶ S)
 
-/-! ### Lift between localizations is iso -/
-
-/-- If `g` and `h` are both `S₀`-localizations of `A`, and
-`α : B ⟶ C` satisfies `α.hom ∘ₗ g.hom = h.hom`, then `α` is an
-isomorphism.
-TODO: upstream to `Mathlib.Algebra.Module.LocalizedModule.Basic`. -/
-lemma IsLocalizedModule.isIso_of_factoring {R₀ : Type u}
-    [CommRing R₀] {A B C : ModuleCat.{u} R₀}
-    (S₀ : Submonoid R₀) (g : A ⟶ B) (h : A ⟶ C)
-    [IsLocalizedModule S₀ g.hom] [IsLocalizedModule S₀ h.hom]
-    (α : B ⟶ C) (hfac : α.hom ∘ₗ g.hom = h.hom) :
-    IsIso α := by
-  have : α.hom =
-      (IsLocalizedModule.linearEquiv S₀
-        g.hom h.hom).toLinearMap := by
-    have h1 := IsLocalizedModule.lift_unique S₀
-      g.hom h.hom (IsLocalizedModule.map_units h.hom)
-      α.hom hfac
-    have h2 := IsLocalizedModule.lift_unique S₀
-      g.hom h.hom (IsLocalizedModule.map_units h.hom)
-      (IsLocalizedModule.linearEquiv S₀
-        g.hom h.hom).toLinearMap
-      (IsLocalizedModule.lift_comp S₀ g.hom h.hom
-        (IsLocalizedModule.map_units h.hom))
-    rw [← h1, h2]
-  rw [show α = ModuleCat.ofHom
-      (IsLocalizedModule.linearEquiv S₀
-        g.hom h.hom).toLinearMap
-    from ModuleCat.hom_ext this]
-  exact (IsLocalizedModule.linearEquiv S₀
-    g.hom h.hom).toModuleIso.isIso_hom
-
 namespace AlgebraicGeometry.Scheme.Modules
 
 /-! ### OrderTop instances for Opens -/
 
--- OrderTop for Opens is in CompleteLattice, but TC synthesis at
--- `.instances` transparency fails through the CommRingCat → Type
--- and Scheme → TopCat → Type coercion chains.
--- TODO: upstream to Mathlib.Topology.Opens or
--- Mathlib.AlgebraicGeometry.Scheme
+-- TC synthesis fails to find `OrderTop` through the `CommRingCat → Type` coercion chain.
 instance orderTopOpensPrimeSpectrum {A : Type u} [CommRing A] :
     OrderTop (TopologicalSpace.Opens (PrimeSpectrum A)) :=
   (inferInstance : CompleteLattice _).toBoundedOrder.toOrderTop
