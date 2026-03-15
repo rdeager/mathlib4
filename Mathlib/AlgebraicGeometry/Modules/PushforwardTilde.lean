@@ -62,9 +62,6 @@ variable {R S : CommRingCat.{u}} (f : R ⟶ S)
 
 namespace AlgebraicGeometry.Scheme.Modules
 
-/-! ### OrderTop instances for Opens -/
-
--- TC synthesis fails to find `OrderTop` through the `CommRingCat → Type` coercion chain.
 instance orderTopOpensPrimeSpectrum {A : Type u} [CommRing A] :
     OrderTop (TopologicalSpace.Opens (PrimeSpectrum A)) :=
   (inferInstance : CompleteLattice _).toBoundedOrder.toOrderTop
@@ -72,13 +69,16 @@ instance orderTopOpensPrimeSpectrum {A : Type u} [CommRing A] :
 instance orderTopOpensSpec {T : CommRingCat.{u}} :
     OrderTop ((Spec T).Opens) := orderTopOpensPrimeSpectrum
 
-/-! ### Smul compatibility -/
+/-! The proof follows [Stacks, Tag 01I9]: on each basic open `D(r)`, the chain
+`ψ_*(Ñ)(D(r)) = Ñ(D(f(r))) = N_{f(r)} = (N_R)_r = (N_R)~(D(r))`
+shows `ψ_*(Ñ) ∈ essImage(tilde_R)` via cover-density of basic opens.
+The functor iso then follows by adjunction. -/
 
 section
 
 variable (M : ModuleCat S)
 
-lemma restrictScalars_pow_smul_eq {N : ModuleCat S}
+private lemma restrictScalars_pow_smul_eq {N : ModuleCat S}
     (r : R) (n : ℕ)
     (x : ((ModuleCat.restrictScalars f.hom).obj N)) :
     r ^ n • x = (f.hom r) ^ n • x := by
@@ -86,9 +86,7 @@ lemma restrictScalars_pow_smul_eq {N : ModuleCat S}
     fun a ↦ ModuleCat.restrictScalars.smul_def (R := ↑R) (f := f.hom) a x
   rw [h, map_pow]
 
-/-! ### Localization compatibility -/
-
-instance isLocalizedModule_restrictScalars_toOpen
+private instance isLocalizedModule_restrictScalars_toOpen
     (r : R) :
     IsLocalizedModule (.powers r)
       ((ModuleCat.restrictScalars f.hom).map
@@ -121,10 +119,8 @@ instance isLocalizedModule_restrictScalars_toOpen
       restrictScalars_pow_smul_eq f r n m₂]
     exact ht
 
-/-! ### Pushforward restriction is a localization -/
-
 /-- The restriction of the pushforward of `M~` to `D(r)` is a localization at `r`. -/
-theorem pushforward_res_isLocalizedModule (r : R) :
+private theorem pushforward_res_isLocalizedModule (r : R) :
     IsLocalizedModule (.powers r)
       ((ModuleCat.restrictScalars f.hom).map
         ((modulesSpecToSheaf.obj
@@ -193,9 +189,7 @@ theorem pushforward_res_isLocalizedModule (r : R) :
       ((ModuleCat.restrictScalars f.hom).map
         (tilde.toOpen M ⊤)))).toLinearEquiv
 
-/-! ### Smul compatibility across universe levels -/
-
-lemma pushforward_smul_eq (U : (Spec R).Opens)
+private lemma pushforward_smul_eq (U : (Spec R).Opens)
     (s : R)
     (x : ((modulesSpecToSheaf.obj
       ((pushforward (Spec.map f)).obj
@@ -214,11 +208,9 @@ lemma pushforward_smul_eq (U : (Spec R).Opens)
   exact congrArg (fun r ↦ nativeMod.smul r (show _ from x))
     (StructureSheaf.toOpen_comp_comap_apply f.hom U s)
 
-/-! ### Pushforward restriction at correct universe -/
-
 /-- Variant of `pushforward_res_isLocalizedModule` at the correct universe level,
 transferring the localization property from `restrictScalars` to `modulesSpecToSheaf`. -/
-theorem pushforward_res_isLocalizedModule_direct
+private theorem pushforward_res_isLocalizedModule_direct
     (r : R) :
     let P := (pushforward (Spec.map f)).obj
       ((tilde.functor S).obj M)
@@ -308,8 +300,6 @@ lemma mem_essImage_tilde_of_basicOpen_localizations
       (LinearMap.ext fun x ↦ congrArg (fun φ ↦ φ.hom x) tri)
   exact NatIso.isIso_of_isIso_app _
 
-/-! ### Essential image membership -/
-
 /-- `f_*(tilde_S(M))` lies in the essential image of `tilde_R`. -/
 lemma mem_essImage_pushforward_tilde :
     (tilde.functor R).essImage
@@ -318,9 +308,7 @@ lemma mem_essImage_pushforward_tilde :
   mem_essImage_tilde_of_basicOpen_localizations _
     (pushforward_res_isLocalizedModule_direct f M)
 
-end -- section variable (M : ModuleCat S)
-
-/-! ### Natural transformation and iso -/
+end
 
 /-- Inner diagram chase for `pushforwardSpecTildeHom` naturality, extracted from the `where`
 clause to avoid elaboration rigidity with `rw` on `NatTrans.naturality`. -/
@@ -396,9 +384,7 @@ lemma isIso_pushforwardSpecTildeHom_app (M : ModuleCat S) :
   haveI : IsIso ((ModuleCat.restrictScalars f.hom).map
       ((tilde.adjunction (R := S)).unit.app M)) := Functor.map_isIso _ _
   haveI : IsIso ((pushforwardΓRestrictScalarsIso f).inv.app
-      ((tilde.functor S).obj M)) := by
-    haveI : IsIso (pushforwardΓRestrictScalarsIso f).inv := inferInstance
-    exact inferInstance
+      ((tilde.functor S).obj M)) := inferInstance
   haveI : IsIso ((ModuleCat.restrictScalars f.hom).map
       ((tilde.adjunction (R := S)).unit.app M) ≫
     (pushforwardΓRestrictScalarsIso f).inv.app
