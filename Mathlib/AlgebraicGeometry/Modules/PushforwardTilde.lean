@@ -251,7 +251,7 @@ private theorem pushforward_res_isLocalizedModule_direct
 
 /-- A sheaf of modules `P` on `Spec R` lies in the essential image of `tilde.functor R` if
 the restriction map from global sections to each basic open `D(r)` is a localization at `{rⁿ}`.
-The proof uses cover-density of basic opens and `IsLocalizedModule.isIso_of_factoring`. -/
+The proof uses cover-density of basic opens and `IsLocalizedModule.isIso_of_comp_eq`. -/
 lemma mem_essImage_tilde_of_basicOpen_localizations
     {R : CommRingCat.{u}} (P : (Spec R).Modules)
     (h : ∀ r : R,
@@ -293,7 +293,7 @@ lemma mem_essImage_tilde_of_basicOpen_localizations
     let hres := (modulesSpecToSheaf.obj P).obj.map
       (homOfLE (le_top :
         PrimeSpectrum.basicOpen r ≤ ⊤)).op
-    exact @IsLocalizedModule.isIso_of_factoring
+    exact @IsLocalizedModule.isIso_of_comp_eq
       _ _ _ _ _ (.powers r) g hres inferInstance (h r)
       (α.hom.app (Opposite.op (PrimeSpectrum.basicOpen r)))
       (LinearMap.ext fun x ↦ congrArg (fun φ ↦ φ.hom x) tri)
