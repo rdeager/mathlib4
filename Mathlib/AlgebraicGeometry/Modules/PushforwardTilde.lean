@@ -203,9 +203,8 @@ private lemma pushforward_smul_eq (U : (Spec R).Opens)
             ((Opens.map
               (Spec.map f).base).obj U))))
       _ instHSMul s x := by
-  letI nativeMod := (((tilde.functor S).obj M).val.obj
-      (Opposite.op ((Opens.map (Spec.map f).base).obj U))).isModule
-  exact congrArg (fun r ↦ nativeMod.smul r (show _ from x))
+  exact congrArg (fun r ↦ (((tilde.functor S).obj M).val.obj
+      (Opposite.op ((Opens.map (Spec.map f).base).obj U))).isModule.smul r (show _ from x))
     (StructureSheaf.toOpen_comp_comap_apply f.hom U s)
 
 /-- Variant of `pushforward_res_isLocalizedModule` at the correct universe level,
