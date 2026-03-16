@@ -3186,6 +3186,7 @@ public import Mathlib.CategoryTheory.Sites.DenseSubsite.Basic
 public import Mathlib.CategoryTheory.Sites.DenseSubsite.InducedTopology
 public import Mathlib.CategoryTheory.Sites.DenseSubsite.OneHypercoverDense
 public import Mathlib.CategoryTheory.Sites.DenseSubsite.SheafEquiv
+public import Mathlib.CategoryTheory.Sites.Descent.BenabouRoubaud
 public import Mathlib.CategoryTheory.Sites.Descent.DescentData
 public import Mathlib.CategoryTheory.Sites.Descent.DescentDataAsCoalgebra
 public import Mathlib.CategoryTheory.Sites.Descent.DescentDataPrime
