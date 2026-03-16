@@ -381,11 +381,23 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Obj
     -- Left pair: mc'(p₁,p,𝟙).hom ≫ p*(mc'(fi,p₁,p_S).inv) = mc'(fi,𝟙,fi).inv ≫ mc'(p_S,p,fi).hom
     -- Right pair: p*(mc'(fi,p₂,p_S).hom) ≫ mc'(p₂,p,𝟙).inv = mc'(p_S,p,fi).inv ≫ mc'(fi,𝟙,fi).hom
     -- Then: inv ≫ (hom ≫ inv) ≫ hom = inv ≫ 𝟙 ≫ hom = inv ≫ hom = 𝟙
-    -- Coherence: pullHom of isoMapOfCommSq along diagonal = 𝟙.
-    -- This holds because p ≫ p₁ = 𝟙 = p ≫ p₂ makes the pulled-back square trivial.
-    -- The existing mapComp'₀₂₃ associativity lemmas require a 3-fold sequential
-    -- factorization, but our situation involves parallel projections p₁, p₂ to the
-    -- same object. A dedicated helper lemma (pullHom_isoMapOfCommSq_diagonal) is needed.
+    -- Cancel left iso and right iso: suffices p*(iso.hom) = mc'₁.inv ≫ mc'₂.hom
+    rw [← cancel_epi (((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
+      (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).inv.toNatTrans.app _),
+      ← cancel_mono (((F.comp Adj.forget₁).mapComp' (sq i i).p₂.op.toLoc p.op.toLoc
+      (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])).hom.toNatTrans.app _)]
+    simp only [Category.assoc, ← reassoc_of% Cat.Hom₂.comp_app, Cat.Hom₂.comp_app,
+      Iso.inv_hom_id, Cat.Hom₂.id_app, Category.id_comp, Category.comp_id,
+      Iso.hom_inv_id]
+    -- Cancel mc'(p₂,p,𝟙).inv ≫ mc'(p₂,p,𝟙).hom = 𝟙 on LHS
+    set_option backward.isDefEq.respectTransparency false in
+    simp only [← reassoc_of% Cat.Hom₂.comp_app, Cat.Hom₂.comp_app,
+      Iso.inv_hom_id, Cat.Hom₂.id_app, Category.comp_id, Category.id_comp]
+    -- Both sides share mc'(p₂,p,𝟙).hom.app as right factor, and LHS has
+    -- mc'(p₂,p,𝟙).inv ≫ mc'(p₂,p,𝟙).hom = 𝟙 that should cancel.
+    -- After cancellation: p*(iso_inner) = mc'(p₁,p,𝟙).inv.app
+    -- This is the key coherence identity: the inner isoMapOfCommSq, pulled
+    -- back by p, equals the "difference" between the two mapComp' sections.
     sorry
   -- [B-R Theorem, cocycle] Follows from coalgebra coassociativity
   pullHom'_hom_comp i₁ i₂ i₃ := by
