@@ -176,8 +176,7 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Obj
     ((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map
       ((F.map (f i₂).op.toLoc).adj.counit.toNatTrans.app (D.obj i₂))
   -- [B-R Theorem, unit direction] Follows from coalgebra counit: D.hom i i ≫ ε = id
-  pullHom'_hom_self i := by
-    sorry
+  pullHom'_hom_self i := by sorry
   -- [B-R Theorem, cocycle] Follows from coalgebra coassociativity
   pullHom'_hom_comp i₁ i₂ i₃ := by
     sorry
@@ -191,7 +190,23 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Functor :
   obj D := DescentDataAsCoalgebra.toDescentData'Obj F sq sq₃ D
   map {D₁ D₂} φ :=
     { hom i := φ.hom i
-      comm i₁ i₂ := by sorry }
+      comm i₁ i₂ := by
+        dsimp only [DescentDataAsCoalgebra.toDescentData'Obj]
+        simp only [Category.assoc]
+        rw [← Functor.map_comp_assoc, ← φ.comm, Functor.map_comp_assoc]
+        congr 1
+        -- Normalize: (F.map g).l.toFunctor = ((F.comp Adj.forget₁).map g).toFunctor
+        rw [show (F.map (f i₁).op.toLoc).l.toFunctor.map
+              ((F.map (f i₂).op.toLoc).r.toFunctor.map (φ.hom i₂)) =
+            ((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
+              ((F.map (f i₂).op.toLoc).r.toFunctor.map (φ.hom i₂)) from rfl]
+        -- Fold separated functors into composite
+        rw [← Cat.Hom.comp_map]
+        rw [((F.comp Adj.forget₁).isoMapOfCommSq
+          (pbCommSq sq i₁ i₂)).hom.toNatTrans.naturality_assoc]
+        rw [Cat.Hom.comp_map, ← Functor.map_comp, ← Functor.map_comp]
+        congr 2
+        exact Adj.counit_naturality _ _ }
 
 /-! ### Beck–Chevalley condition and backward functor
 
