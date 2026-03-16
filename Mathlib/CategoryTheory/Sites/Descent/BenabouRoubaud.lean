@@ -27,20 +27,50 @@ arising from the pullback squares are isomorphisms [B-R §1.2, Chevalley conditi
 Composing with the existing equivalence `DescentData'.descentDataEquivalence` yields
 an equivalence with `DescentData`, filling the TODO in `DescentDataAsCoalgebra.lean`.
 
+## Correspondence with the original papers
+
+### Bénabou–Roubaud (1970)
+
+| B-R notation | Lean notation | Description |
+|---|---|---|
+| `P : M → A` | `F : LocallyDiscrete Cᵒᵖ ⥤ᵖ Adj Cat` | Bifibration / Adj-valued pseudofunctor |
+| `M(A)` | `(F.obj (.mk (op A))).obj` | Fiber category over `A` |
+| `a^*` | `(F.map a.op.toLoc).l.toFunctor` | Inverse image (left adjoint) |
+| `a_*` | `(F.map a.op.toLoc).r.toFunctor` | Direct image (right adjoint) |
+| `η^a`, `ε^a` | `.adj.unit.toNatTrans`, `.adj.counit.toNatTrans` | Adjunction unit/counit |
+| `T^a = a^*a_*` | Comonad from `(F.map a.op.toLoc).adj` | Associated comonad [B-R §1.1] |
+| `M^a` (algebras) | `DescentDataAsCoalgebra` | Coalgebra category [B-R §1.1] |
+| `D(a)` (descent) | `DescentData'` / `DescentData` | Descent data category [B-R §1.3] |
+| Condition (C) | `hBC : IsIso (baseChangeApp ...)` | Chevalley condition [B-R §1.2] |
+| `K^a : D(a) → M^a` | `descentDataAsCoalgebraEquivDescentData'` | The B-R equivalence |
+
+Note: B-R uses `a_*` left adjoint to `a^*` (monad `T^a = a^*a_*`), while mathlib uses
+`a^*` left adjoint to `a_*` (comonad `a^*a_*`). The mathematical content is the same.
+
+### Kahn (2024), arXiv:2404.00868
+
+| Kahn notation | Lean construction | Reference |
+|---|---|---|
+| `ξ(φ)` | `toDescentData'Obj.hom` | Eq (1.3): `p₂^*(ε) ∘ iso ∘ p₁^*(φ)` |
+| `χ` (base change) | `baseChangeApp` | Eq (1.2): `η ≫ r(iso ≫ p₂^*(ε))` |
+| Exchange condition | `hBC` hypothesis | Definition 2.1 |
+| `Δ^*(ξ(φ)) = φ ∘ η` | `pullHom'_hom_self` | Theorem 4.2 (unit condition) |
+| Cocycle condition | `pullHom'_hom_comp` | Proposition 3.3 (associativity) |
+
 ## Main definitions
 
 * `baseChangeApp`: the base change morphism `χ` for a pullback square [Kahn Eq (1.2)]
 * `DescentDataAsCoalgebra.toDescentData'Functor`: forward functor (no BC needed)
 * `DescentData'.fromDescentDataAsCoalgebraFunctor`: backward functor (requires BC)
 * `descentDataAsCoalgebraEquivDescentData'`: the equivalence (requires BC)
+* `descentDataAsCoalgebraEquivDescentData`: composed with `descentDataEquivalence`
 
 ## References
 
-* [J. Bénabou, J. Roubaud, *Monades et descente*][benabou-roubaud-1970]
-* [B. Kahn, *Descente galoisienne et isogénies*][kahn-2024]
-  - §1.3 Eq (1.3): the map ξ(φ) = p₂*(ε) ∘ iso ∘ p₁*(φ)
-  - §2.1: Exchange (Beck–Chevalley) condition
-  - §4.2: Main theorem identifying descent data with monad algebras
+* [J. Bénabou, J. Roubaud, *Monades et descente*,
+  C. R. Acad. Sc. Paris, t. 270, 1970][benabou-roubaud-1970]
+* [B. Kahn, *Descente galoisienne et isogénies*, arXiv:2404.00868][kahn-2024]
+* [F. Borceux, *Handbook of Categorical Algebra 2*, Chapter 5][borceux-1994]
 
 -/
 
@@ -78,16 +108,25 @@ def pbCommSq (i₁ i₂ : ι) : CommSq (f i₁).op.toLoc (f i₂).op.toLoc
 
 /-! ### Base change morphism
 
-[Kahn Eq (1.2)] For each pullback square, the **base change morphism** `χ` is the
-canonical natural transformation `(f i₁)^* ∘ (f i₂)_* → (p₁)_* ∘ p₂^*`. It is
-constructed as the composite:
+[Kahn Eq (1.2), B-R §1.2] For each pullback square
 ```
-(f i₁)^*((f i₂)_*(M)) ──[η_{p₁}]──→ (p₁)_*(p₁^*((f i₁)^*((f i₂)_*(M))))
-    ──[(p₁)_*(isoMapOfCommSq)]──→ (p₁)_*(p₂^*((f i₂)^*((f i₂)_*(M))))
-    ──[(p₁)_*(p₂^*(ε))]──→ (p₁)_*(p₂^*(M))
+  X i₁ ×_S X i₂ ──p₂──→ X i₂
+       |                    |
+       p₁                 f i₂
+       |                    |
+       v                    v
+     X i₁ ────f i₁────→    S
 ```
-where `η_{p₁}` is the unit of `p₁^* ⊣ (p₁)_*`, the middle step uses the pseudofunctor
-coherence iso for the pullback square, and `ε` is the counit of `(f i₂)^* ⊣ (f i₂)_*`. -/
+the **base change morphism** `χ` is the canonical map
+`(f i₁)^* ∘ (f i₂)_* → (p₁)_* ∘ p₂^*`. In B-R's original formulation (§1.2),
+the Chevalley condition (C) states that `χ` is an isomorphism for pullback squares.
+Kahn (§2.1, Definition 2.1) calls this the "exchange condition".
+
+The construction uses three ingredients:
+1. **Unit** `η^{p₁}` of the adjunction `p₁^* ⊣ (p₁)_*` [B-R §1.1]
+2. **Pseudofunctor coherence** `isoMapOfCommSq` for the pullback square, extracting
+   the compatibility `(f i₁)^* ∘ p₁^* ≅ (f i₂)^* ∘ p₂^*`
+3. **Counit** `ε^{f i₂}` of the adjunction `(f i₂)^* ⊣ (f i₂)_*` [B-R §1.1] -/
 
 set_option backward.isDefEq.respectTransparency false in
 variable (F) in
@@ -158,7 +197,20 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Functor :
 
 [B-R §1.2, Kahn §2.1] The Beck–Chevalley (exchange) condition states that the base
 change morphism `χ` is an isomorphism for each pullback square. Under this condition,
-we can invert `χ` to construct the backward functor from descent data to coalgebras. -/
+we can invert `χ` to construct the backward functor from descent data to coalgebras.
+
+In B-R's formulation (§1.2), condition (C) states: in a commutative square whose image
+under P is a pullback, if `χ` and `χ'` are cartesian and `k₀` is cocartesian, then `k₁`
+is cocartesian. Kahn (§2.1, Definition 2.1) shows this is equivalent to `χ` being an iso.
+
+The backward construction is the inverse of Kahn's map `ξ` from Eq (1.3).
+Given a descent datum `v : p₁^*(M) → p₂^*(M)`, the corresponding coalgebra structure
+map `K^a(v) : M → (f i₁)^*((f i₂)_*(M))` is obtained by:
+1. Applying the unit `η_{p₁}` to enter `(p₁)_* ∘ p₁^*`
+2. Pushing forward `v` along `(p₁)_*`
+3. Applying `χ⁻¹` (the inverse base change, existing by BC) to reach `(f i₁)^* ∘ (f i₂)_*`
+
+This is the "Eilenberg–Moore comparison" of B-R §1.1 (the functor `Φ^a`). -/
 
 set_option backward.isDefEq.respectTransparency false in
 variable (F) in
