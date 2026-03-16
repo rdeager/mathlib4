@@ -5,8 +5,7 @@ Authors: Richard Eager
 -/
 module
 
-public import Mathlib.CategoryTheory.Sites.Descent.DescentDataAsCoalgebra
-public import Mathlib.CategoryTheory.Sites.Descent.DescentDataPrime
+public import Mathlib.CategoryTheory.Sites.Descent.DiagonalCoherence
 
 /-!
 # Bénabou–Roubaud: descent data as coalgebras
@@ -92,19 +91,6 @@ section BenabouRoubaud
 variable {ι : Type t} {S : C} {X : ι → C} {f : ∀ i, X i ⟶ S}
   (sq : ∀ i j, ChosenPullback (f i) (f j))
   (sq₃ : ∀ (i₁ i₂ i₃ : ι), ChosenPullback₃ (sq i₁ i₂) (sq i₂ i₃) (sq i₁ i₃))
-
-/-! ### Pullback commutative squares
-
-The pullback condition `p₁ ≫ f i₁ = p₂ ≫ f i₂` lifts to a commutative square
-in `LocallyDiscrete Cᵒᵖ`, which can be fed to `Pseudofunctor.isoMapOfCommSq`. -/
-
-/-- The pullback condition for `sq i₁ i₂` as a `CommSq` in `LocallyDiscrete Cᵒᵖ`.
-This encodes the commutativity of the pullback square, lifted to the opposite category. -/
-def pbCommSq (i₁ i₂ : ι) : CommSq (f i₁).op.toLoc (f i₂).op.toLoc
-    (sq i₁ i₂).p₁.op.toLoc (sq i₁ i₂).p₂.op.toLoc := by
-  constructor
-  change ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc = ((sq i₁ i₂).p₂ ≫ f i₂).op.toLoc
-  rw [(sq i₁ i₂).condition]
 
 /-! ### Base change morphism
 
@@ -218,7 +204,7 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Obj
     rw [DescentData'.pullHom'_eq_pullHom _ _ _ _ p]
     dsimp only [LocallyDiscreteOpToCat.pullHom]
     rw [Functor.map_comp_assoc, Functor.map_comp_assoc]
-    -- Push D.hom past outer_hom and ε past outer_inv using conv
+    -- Push D.hom past outer_hom and ε past outer_inv using naturality
     set_option backward.isDefEq.respectTransparency false in
     conv_lhs =>
       rw [← Category.assoc, ← (F.comp Adj.forget₁).mapComp'_hom_naturality
@@ -227,59 +213,8 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Obj
     simp only [Category.assoc]
     set_option backward.isDefEq.respectTransparency false in
     simp only [mapComp'_inv_naturality]
-    -- Goal: 𝟙*(D.hom) ≫ mc'(p₁,p,𝟙).hom ≫ p*(iso.hom) ≫ mc'(p₂,p,𝟙).inv ≫ 𝟙*(ε) = 𝟙
-    -- Show: middle 3 terms = 𝟙, then D.hom ≫ ε = 𝟙 by D.counit
-    -- Middle: pullHom(iso.hom)(p) where iso = isoMapOfCommSq(pbCommSq)
-    -- Suffices to show pullHom(iso.hom)(p) = 𝟙 as an Iso applied at an object
-    -- Insert iso.inv before iso.hom using Iso.inv_hom_id
-    -- pullHom(iso.hom)(p) = mc'.hom ≫ p*(iso.hom) ≫ mc'.inv
-    -- This is an NatIso applied at M, pulled back
-    -- Use NatIso.naturality_2 to simplify:
-    -- mc'.hom ≫ p*(iso.hom) ≫ mc'.inv should reduce to something that cancels
-    -- Actually... this is pullHom(iso.hom)(p). And iso goes between p₁* and p₂*.
-    -- pullHom takes φ : p₁*(M) → p₂*(M), g = p, and outputs
-    --   mc'(p₁,p,𝟙).hom ≫ p*(φ) ≫ mc'(p₂,p,𝟙).inv : 𝟙*(M) → 𝟙*(M)
-    -- where φ = iso.hom.app(M)
-    -- This is functorial in M: it's a natural transformation
-    -- For M = fi_*(D.obj), this should be 𝟙 by coherence
-    -- Key: use isoMapOfCommSq as a natural iso, and the pullHom is conjugation
-    -- The pullback of a natural iso along p gives a natural iso, and the
-    -- particular iso here degenerates because the square becomes trivial along the diagonal
-    -- Approach: use that the composition of the 5 remaining terms is the counit
-    -- of the coalgebra structure, pulled back appropriately
-    -- Let me try: fold remaining middle into ← Functor.map_comp, then simp with D.counit
-    -- The 5 terms: 𝟙*(D.hom) ≫ mc'.hom ≫ p*(iso.hom) ≫ mc'.inv ≫ 𝟙*(ε)
-    -- = 𝟙*(D.hom) ≫ pullHom(iso.hom)(p) ≫ 𝟙*(ε)
-    -- We need: pullHom(iso.hom)(p) = 𝟙
-    -- Enough: mc'.hom ≫ p*(iso.hom) ≫ mc'.inv = 𝟙
-    -- which is: mapComp'_naturality_2(p₁,p,𝟙)(iso.hom) if p₁ = p₂
-    -- but p₁ ≠ p₂ in general!
-    -- However, the source mc'.hom uses p₁ and the target mc'.inv uses p₂
-    -- so this ISN'T mapComp'_naturality_2
-    -- The coherence here is deeper: it's about the pseudofunctor's response to
-    -- the diagonal map, and requires 3-morphism associativity
-    -- Let me try a `calc` approach with explicit intermediate steps
-    -- Or: observe that the composition 𝟙*(D.hom) ≫ pullHom(iso.hom)(p) ≫ 𝟙*(ε)
-    -- equals pullHom(D.hom ≫ iso.hom ≫ ε)(p)(using linearity of pullHom... but it's not linear)
-    -- Actually, pullHom IS linear in a sense: pullHom(a ≫ b)(g) = pullHom(a)(g) ≫ pullHom(b)(g)
-    -- when a and b have the right types!
-    -- pullHom(D.hom)(p)(𝟙)(𝟙) = 𝟙*(D.hom) ≫ mc'(p₁,p,𝟙).hom ≫ mc'(p₁,p,𝟙).inv
-    --   Wait no, pullHom takes φ between f₁* and f₂*, not within the same fiber
-    -- OK let me just try `simp` with all possible lemmas and maxHeartbeats
-    -- Middle 3: mc'(p₁,p,𝟙).hom ≫ p*(iso.hom) ≫ mc'(p₂,p,𝟙).inv
-    -- Show this = 𝟙 by reducing to the identity coherence iso
-    -- Rewrite iso using isoMapOfCommSq_eq, unfold it
-    -- Then use mapComp' associativity
-    -- Reduce middle to 𝟙 and use D.counit
-    -- Suffices: 𝟙*(D.hom ≫ ε) = 𝟙*(𝟙) = 𝟙
-    -- For now: suffices to show
-    -- mc'.hom(p₁,p,𝟙) ≫ p*(iso.hom) ≫ mc'.inv(p₂,p,𝟙) = 𝟙 at the relevant object
-    -- Use a helper have
-    -- Prove the middle 3 terms = 𝟙, then fold D.hom ≫ ε = 𝟙 via D.counit
-    -- Middle: mc'(p₁,p,𝟙).hom ≫ p*(isoMapOfCommSq.hom.app(M)) ≫ mc'(p₂,p,𝟙).inv
-    -- where M = r(D.obj i) in the S-fiber
-    -- This equals 𝟙 because pulling the isoMapOfCommSq back along the diagonal
-    -- gives the identity coherence iso
+    -- Now: 𝟙*(D.hom) ≫ [middle = pullHom(iso)(p)] ≫ 𝟙*(ε) = 𝟙
+    -- The middle is pullHom_isoMapOfCommSq_diagonal
     suffices h_mid :
         ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
           (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).hom.toNatTrans.app
@@ -301,180 +236,8 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Obj
         rw [Category.assoc (f := ((F.comp Adj.forget₁).map (𝟙 (X i)).op.toLoc).toFunctor.map _)]
         simp only [Category.assoc, h_mid, Category.id_comp, Category.comp_id]
       rw [← Functor.map_comp, D.counit, Functor.map_id]
-    -- h_mid: pullHom(isoMapOfCommSq.hom)(p) = 𝟙
-    -- Unfold isoMapOfCommSq into mapComp' pair, expand, use 3-morph assoc
-    rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq sq i i)
-      ((sq i i).p₁ ≫ f i).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])]
-    simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app]
-    rw [Functor.map_comp_assoc]
-    -- Now: mc'(p₁,p,𝟙).hom ≫ p*(mc'(fi,p₁,φ).inv) ≫ p*(mc'(fi,p₂,φ).hom) ≫ mc'(p₂,p,𝟙).inv = 𝟙
-    -- Combine pairs using mapComp' 3-morph associativity:
-    -- Left pair: mc'(p₁,p,𝟙).hom ≫ p*(mc'(fi,p₁,φ).inv)
-    -- Right pair: p*(mc'(fi,p₂,φ).hom) ≫ mc'(p₂,p,𝟙).inv
-    -- Use mapComp'_inv_whiskerRight_mapComp'₀₂₃_inv for the right pair (both .inv)
-    -- But right pair has hom+inv, not inv+inv
-    -- Instead, insert hom_inv_id to convert
-    -- Or use mapComp'_naturality_2 after combining adjacent terms
-    -- Actually: the 4 terms give mapComp'_naturality_2 for (fi,𝟙,fi):
-    -- mc'(fi,𝟙,fi).hom ≫ 𝟙*(fi*(a)) ≫ mc'(fi,𝟙,fi).inv = fi*(a)
-    -- But we don't directly have this pattern.
-    -- Try a big simp
-    -- Goal: 4 terms (right-associated):
-    -- mc'(p₁,p,𝟙).hom.app(fi*(M)) ≫ p*(mc'(fi,p₁,φ).inv.app(M)) ≫
-    --   p*(mc'(fi,p₂,φ).hom.app(M)) ≫ mc'(p₂,p,𝟙).inv.app(fi*(M)) = 𝟙
-    -- Insight: this is pullHom(isoMapOfCommSq.hom.app(M))(p)
-    -- = pullHom(mc'(fi,p₁,φ).inv.app ≫ mc'(fi,p₂,φ).hom.app)(p)
-    -- The isoMapOfCommSq at the diagonal becomes identity after pullback
-    -- Proof: use the characterization from isoMapOfCommSq_eq
-    -- and mapComp' associativity
-    -- Key identity: compose the outer mapComp' with the inner mapComp' to get a single mapComp'
-    -- for the full path fi → p_k → p → 𝟙, which equals fi → 𝟙 = fi
-    -- Then the pair of such compositions with different p_k cancels
-    --
-    -- Concretely, for term 1 (outer hom at p₁) and term 2 (inner inv at fi,p₁):
-    -- mc'(p₁,p,𝟙).hom.app(fi*(M)) ≫ p*(mc'(fi,p₁,φ).inv.app(M))
-    -- = mc'(fi,𝟙,fi).inv.app(M) (by 3-morph assoc, since fi→p₁→p = fi→𝟙)
-    -- And for term 3 (inner hom at fi,p₂) and term 4 (outer inv at p₂):
-    -- p*(mc'(fi,p₂,φ).hom.app(M)) ≫ mc'(p₂,p,𝟙).inv.app(fi*(M))
-    -- = mc'(fi,𝟙,fi).hom.app(M) (by 3-morph assoc, since fi→p₂→p = fi→𝟙)
-    -- Wait, these should be the SAME mc'(fi,𝟙,fi) since both factor through fi→𝟙!
-    -- So the 4-term composition becomes mc'(fi,𝟙,fi).inv ≫ mc'(fi,𝟙,fi).hom = 𝟙
-    -- via Iso.inv_hom_id
-    -- But this requires the 3-morph assoc to give EXACTLY the same iso in both cases
-    -- which it should since the composite path is the same: fi → (p₁ or p₂) → p → (p≫p₁=𝟙 or p≫p₂=𝟙) = fi
-    --
-    -- Use mapComp'₀₂₃_hom_comp_mapComp'_hom_whiskerRight_app (hom variant) for the hom pair
-    -- Use mapComp'_inv_whiskerRight_mapComp'₀₂₃_inv_app (inv variant) for the inv pair
-    -- But terms 1,2 are hom,inv and terms 3,4 are hom,inv - mixed!
-    -- Convert: insert id = inv ≫ hom for outer mc'(p₁,p,𝟙):
-    -- mc'(p₁,p,𝟙).hom = mc'(p₁,p,𝟙).hom
-    -- mc'(p₁,p,𝟙).inv ≫ mc'(p₁,p,𝟙).hom = 𝟙
-    -- Hmm, this inserts MORE terms.
-    -- Actually, let me try the approach of inserting mc'(p₁,p,𝟙).inv ≫ mc'(p₁,p,𝟙).hom = 𝟙
-    -- between terms 2 and 3, creating:
-    -- (terms 1,2): mc'.hom ≫ p*(mc'.inv) ... followed by mc'(p₁,p,𝟙).inv (BOTH inv)
-    -- then mc'(p₁,p,𝟙).hom followed by (terms 3,4): p*(mc'.hom) ≫ mc'.inv (BOTH hom after mc')
-    -- Use the inv-inv lemma on first group and hom-hom lemma on second group
-    -- Insert identity between terms 2 and 3:
-    conv_lhs =>
-      rw [← Category.assoc, ← Category.assoc]
-      rw [Category.assoc (f := ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
-        (𝟙 (X i)).op.toLoc _).hom.toNatTrans.app _)]
-    set_option backward.isDefEq.respectTransparency false in
-    rw [show ((F.comp Adj.forget₁).map p.op.toLoc).toFunctor.map
-          (((F.comp Adj.forget₁).mapComp' (f i).op.toLoc (sq i i).p₁.op.toLoc
-            ((sq i i).p₁ ≫ f i).op.toLoc _).inv.toNatTrans.app
-            ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) ≫
-        ((F.comp Adj.forget₁).map p.op.toLoc).toFunctor.map
-          (((F.comp Adj.forget₁).mapComp' (f i).op.toLoc (sq i i).p₂.op.toLoc
-            ((sq i i).p₁ ≫ f i).op.toLoc _).hom.toNatTrans.app
-            ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) =
-      ((F.comp Adj.forget₁).map p.op.toLoc).toFunctor.map
-        (((F.comp Adj.forget₁).mapComp' (f i).op.toLoc (sq i i).p₁.op.toLoc
-            ((sq i i).p₁ ≫ f i).op.toLoc _).inv.toNatTrans.app
-            ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i)) ≫
-        ((F.comp Adj.forget₁).mapComp' (f i).op.toLoc (sq i i).p₂.op.toLoc
-            ((sq i i).p₁ ≫ f i).op.toLoc _).hom.toNatTrans.app
-            ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) from
-      (Functor.map_comp _ _ _).symm]
-    -- Use mapComp'₀₁₃_inv_comp_mapComp'₀₂₃_hom to fuse each mixed hom/inv pair.
-    -- Left pair: mc'(p₁,p,𝟙).hom ≫ p*(mc'(fi,p₁,p_S).inv) = mc'(fi,𝟙,fi).inv ≫ mc'(p_S,p,fi).hom
-    -- Right pair: p*(mc'(fi,p₂,p_S).hom) ≫ mc'(p₂,p,𝟙).inv = mc'(p_S,p,fi).inv ≫ mc'(fi,𝟙,fi).hom
-    -- Then: inv ≫ (hom ≫ inv) ≫ hom = inv ≫ 𝟙 ≫ hom = inv ≫ hom = 𝟙
-    -- Cancel left iso and right iso: suffices p*(iso.hom) = mc'₁.inv ≫ mc'₂.hom
-    rw [← cancel_epi (((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
-      (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).inv.toNatTrans.app _),
-      ← cancel_mono (((F.comp Adj.forget₁).mapComp' (sq i i).p₂.op.toLoc p.op.toLoc
-      (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])).hom.toNatTrans.app _)]
-    simp only [Category.assoc, ← reassoc_of% Cat.Hom₂.comp_app, Cat.Hom₂.comp_app,
-      Iso.inv_hom_id, Cat.Hom₂.id_app, Category.id_comp, Category.comp_id,
-      Iso.hom_inv_id]
-    -- The LHS has mc'(p₂,p,𝟙).inv.app ≫ mc'(p₂,p,𝟙).hom.app which = 𝟙.
-    -- Use NatIso.inv_hom_id to cancel directly.
-    set_option backward.isDefEq.respectTransparency false in
-    erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
-      ((F.comp Adj.forget₁).mapComp' (sq i i).p₂.op.toLoc p.op.toLoc (𝟙 (X i)).op.toLoc
-        (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])))]
-    erw [Category.comp_id]
-    -- Remaining: p*(mc'(fi,p₁,φ).inv ≫ mc'(fi,p₂,φ).hom) = mc'(p₁,p,𝟙).inv ≫ mc'(p₂,p,𝟙).hom
-    -- Strategy: use mapComp'₀₁₃_inv_app (the 4-object coherence for S→Xi→pullback→Xi)
-    -- to expand mc'(fi,𝟙,fi).inv.app via two different factorizations (p₁ and p₂),
-    -- derive pp*(β₁.inv) = α₁.inv ≫ α₂.hom ≫ pp*(β₂.inv), then substitute and cancel.
-    rw [Functor.map_comp]
-    -- Two instances of mapComp'₀₁₃_inv_app for the chain fi → p_k → pp
-    have exp₁ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
-      (f i).op.toLoc (sq i i).p₁.op.toLoc p.op.toLoc
-      ((sq i i).p₁ ≫ f i).op.toLoc (𝟙 (X i)).op.toLoc (f i).op.toLoc
-      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])
-      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])
-      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, Category.id_comp])
-      ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))
-    have exp₂ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
-      (f i).op.toLoc (sq i i).p₂.op.toLoc p.op.toLoc
-      ((sq i i).p₁ ≫ f i).op.toLoc (𝟙 (X i)).op.toLoc (f i).op.toLoc
-      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i i).condition.symm])
-      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])
-      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, Category.id_comp])
-      ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))
-    -- From exp₁ and exp₂ (same LHS γ.inv.app, same tail δ.inv.app):
-    -- Goal: pp*(β₁.inv) ≫ pp*(β₂.hom) = α₁.inv ≫ α₂.hom
-    -- Proof: from the two expansions derive pp*(inv₁) = α₁.inv ≫ α₂.hom ≫ pp*(inv₂),
-    -- then pp*(inv₁) ≫ pp*(hom₂) = α₁.inv ≫ α₂.hom ≫ pp*(inv₂ ≫ hom₂) = α₁.inv ≫ α₂.hom.
-    -- Use suffices + backwards approach: show both sides lie in a common telescope.
-    -- Multiply goal on the left by α₁.hom and on the right by... hmm.
-    -- Alternative direct approach: from exp₁.symm.trans exp₂ (same LHS), cancel tail δ.inv.app
-    have h_eq := exp₁.symm.trans exp₂
-    -- h_eq : α₁.hom ≫ pp*(inv₁) ≫ δ.inv = α₂.hom ≫ pp*(inv₂) ≫ δ.inv
-    -- Key step: from h_eq, cancel the δ.inv tail and extract the cleaned equation.
-    -- h_eq has the form: α₁.hom ≫ pp*(inv₁) ≫ δ.inv = α₂.hom ≫ pp*(inv₂) ≫ δ.inv
-    -- We right-compose with δ.hom to cancel δ.inv ≫ δ.hom = 𝟙 on both sides.
-    have h_cleaned := congr_arg (· ≫ ((F.comp Adj.forget₁).mapComp' ((sq i i).p₁ ≫ f i).op.toLoc
-      p.op.toLoc (f i).op.toLoc
-      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, ← Category.assoc, h₁,
-              Category.id_comp])).hom.toNatTrans.app
-      ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) h_eq
-    simp only [Category.assoc] at h_cleaned
-    set_option backward.isDefEq.respectTransparency false in
-    erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso ((F.comp Adj.forget₁).mapComp'
-      ((sq i i).p₁ ≫ f i).op.toLoc p.op.toLoc (f i).op.toLoc
-      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, ← Category.assoc, h₁,
-              Category.id_comp])))] at h_cleaned
-    erw [Category.comp_id, Category.comp_id] at h_cleaned
-    -- h_cleaned: α₁.hom ≫ pp*(inv₁) = α₂.hom ≫ pp*(inv₂)
-    -- Now: rw h_cleaned in LHS to replace α₁.hom ≫ pp*(inv₁) with α₂.hom ≫ pp*(inv₂)
-    -- Goal: pp*(inv₁) ≫ pp*(hom₂) = α₁.inv ≫ α₂.hom
-    -- Step: multiply by α₁.hom on the left: α₁.hom ≫ pp*(inv₁) ≫ pp*(hom₂) = α₁.hom ≫ α₁.inv ≫ α₂.hom = α₂.hom
-    -- Use h_cleaned to get: α₂.hom ≫ pp*(inv₂) ≫ pp*(hom₂) = α₂.hom
-    -- Which needs pp*(inv₂) ≫ pp*(hom₂) = 𝟙
-    -- This is pp*(inv₂ ≫ hom₂) = pp*(𝟙) = 𝟙 ✓
-    rw [← cancel_epi (((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
-      (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).hom.toNatTrans.app
-      (((F.comp Adj.forget₁).map (f i).op.toLoc).toFunctor.obj
-        ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))))]
-    -- Goal: α₁.hom ≫ pp*(inv₁) ≫ pp*(hom₂) = α₁.hom ≫ α₁.inv ≫ α₂.hom
-    -- Left-associate to match h_cleaned prefix, then rewrite
-    simp only [← Category.assoc]
-    rw [h_cleaned]
-    -- Goal: (α₂.hom ≫ pp*(inv₂)) ≫ pp*(hom₂) = (α₁.hom ≫ α₁.inv) ≫ α₂.hom
-    -- LHS: collapse pp*(inv₂) ≫ pp*(hom₂) = pp*(inv₂ ≫ hom₂) = pp*(𝟙) = 𝟙
-    simp only [Category.assoc, ← Functor.map_comp]
-    set_option backward.isDefEq.respectTransparency false in
-    erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso ((F.comp Adj.forget₁).mapComp'
-      (f i).op.toLoc (sq i i).p₂.op.toLoc ((sq i i).p₁ ≫ f i).op.toLoc
-      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i i).condition.symm])))]
-    erw [Functor.map_id, Category.comp_id]
-    -- Goal: α₂.hom.app = α₁.hom.app ≫ α₁.inv.app(fi.l*M) ≫ α₂.hom.app
-    -- Bridge the Adj mismatch: fi.l* = (F.comp Adj.forget₁).map fi* defeq
-    rw [show ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
-          (𝟙 (X i)).op.toLoc _).inv.toNatTrans.app
-          ((F.map (f i).op.toLoc).l.toFunctor.obj
-            ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) =
-        ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
-          (𝟙 (X i)).op.toLoc _).inv.toNatTrans.app
-          (((F.comp Adj.forget₁).map (f i).op.toLoc).toFunctor.obj
-            ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) from rfl]
-    simp only [Category.assoc, ← reassoc_of% Cat.Hom₂.comp_app, Cat.Hom₂.comp_app,
-      Iso.hom_inv_id, Cat.Hom₂.id_app, Category.id_comp]
+    -- Apply the extracted diagonal coherence lemma
+    exact pullHom_isoMapOfCommSq_diagonal sq i p h₁ h₂ (D.obj i)
   -- [B-R Theorem, cocycle] Follows from coalgebra coassociativity
   pullHom'_hom_comp i₁ i₂ i₃ := by
     sorry
@@ -550,8 +313,71 @@ noncomputable def DescentData'.toDescentDataAsCoalgebraObj
     (F.map (sq i₁ i₂).p₁.op.toLoc).r.toFunctor.map (D.hom i₁ i₂) ≫
     -- Step 3: Inverse of base change morphism (exists by BC)
     inv (baseChangeApp F sq i₁ i₂ (D.obj i₂))
-  -- [B-R] Counit follows from pullHom'_hom_self and triangle identities
-  counit := sorry
+  -- [B-R] Counit: backward.hom i i ≫ ε = 𝟙
+  -- Proof: round-trip identity + D.pullHom'_hom_self + diagonal coherence
+  counit i := by
+    simp only [Category.assoc]
+    obtain ⟨p, h₁, h₂⟩ := (sq i i).isPullback.exists_lift (𝟙 _) (𝟙 _) (by simp)
+    -- Round-trip: p₁^*(backward.hom) ≫ iso ≫ p₂^*(ε) = D.hom i i
+    have h_rt : ((F.comp Adj.forget₁).map (sq i i).p₁.op.toLoc).toFunctor.map
+        ((F.map (sq i i).p₁.op.toLoc).adj.unit.toNatTrans.app (D.obj i) ≫
+         (F.map (sq i i).p₁.op.toLoc).r.toFunctor.map (D.hom i i) ≫
+         inv (baseChangeApp F sq i i (D.obj i))) ≫
+        ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i i)).hom.toNatTrans.app
+          ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i)) ≫
+        ((F.comp Adj.forget₁).map (sq i i).p₂.op.toLoc).toFunctor.map
+          ((F.map (f i).op.toLoc).adj.counit.toNatTrans.app (D.obj i)) = D.hom i i := by
+      rw [show ((F.comp Adj.forget₁).map (sq i i).p₁.op.toLoc).toFunctor.map _ =
+        (F.map (sq i i).p₁.op.toLoc).l.toFunctor.map _ from rfl]
+      simp only [Functor.map_comp, Category.assoc]
+      have h_key : (F.map (sq i i).p₁.op.toLoc).l.toFunctor.map
+            (baseChangeApp F sq i i (D.obj i)) ≫
+          (F.map (sq i i).p₁.op.toLoc).adj.counit.toNatTrans.app _ =
+        ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i i)).hom.toNatTrans.app _ ≫
+        ((F.comp Adj.forget₁).map (sq i i).p₂.op.toLoc).toFunctor.map
+          ((F.map (f i).op.toLoc).adj.counit.toNatTrans.app _) := by
+        dsimp only [baseChangeApp]; rw [Functor.map_comp]
+        simp [Adj.left_triangle_components_assoc, Adj.counit_naturality]
+      rw [← h_key, ← Functor.map_comp_assoc, IsIso.inv_hom_id, Functor.map_id,
+          Category.id_comp, ← Functor.map_comp]
+      simp [Adj.left_triangle_components_assoc, Adj.counit_naturality]
+    -- Substitute round-trip into D.pullHom'_hom_self
+    have h_ps := D.pullHom'_hom_self i
+    rw [DescentData'.pullHom'_eq_pullHom _ _ _ _ p] at h_ps
+    rw [← h_rt] at h_ps
+    dsimp only [LocallyDiscreteOpToCat.pullHom] at h_ps
+    rw [Functor.map_comp_assoc, Functor.map_comp_assoc] at h_ps
+    -- Push backward.hom past mc'₁ (bridge defeq for rewriter, then naturality)
+    rw [show ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
+          (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).hom.toNatTrans.app
+          (D.obj i) =
+        ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
+          (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).hom.toNatTrans.app
+          (((F.comp Adj.forget₁).map (𝟙 (X i)).op.toLoc).toFunctor.obj (D.obj i))
+        from rfl] at h_ps
+    rw [← Category.assoc, ← (F.comp Adj.forget₁).mapComp'_hom_naturality
+        (sq i i).p₁.op.toLoc p.op.toLoc (𝟙 (X i)).op.toLoc
+        (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])
+        ((F.map (sq i i).p₁.op.toLoc).adj.unit.toNatTrans.app (D.obj i) ≫
+         (F.map (sq i i).p₁.op.toLoc).r.toFunctor.map (D.hom i i) ≫
+         inv (baseChangeApp F sq i i (D.obj i)))] at h_ps
+    simp only [Category.assoc] at h_ps
+    -- Push ε past mc'₂
+    set_option backward.isDefEq.respectTransparency false in
+    simp only [mapComp'_inv_naturality] at h_ps
+    -- Diagonal coherence: middle = 𝟙
+    have h_mid := pullHom_isoMapOfCommSq_diagonal sq i p h₁ h₂ (D.obj i)
+    conv at h_ps =>
+      lhs
+      rw [← Category.assoc, ← Category.assoc, ← Category.assoc]
+      rw [Category.assoc
+        (f := ((F.comp Adj.forget₁).map (𝟙 (X i)).op.toLoc).toFunctor.map _)]
+      rw [Category.assoc
+        (f := ((F.comp Adj.forget₁).map (𝟙 (X i)).op.toLoc).toFunctor.map _)]
+      rw [Category.assoc
+        (f := ((F.comp Adj.forget₁).map (𝟙 (X i)).op.toLoc).toFunctor.map _)]
+      simp only [Category.assoc, h_mid, Category.id_comp, Category.comp_id]
+    exact h_ps
   -- [B-R] Coassociativity follows from pullHom'_hom_comp and BC naturality
   coassoc := sorry
 
