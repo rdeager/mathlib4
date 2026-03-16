@@ -147,6 +147,42 @@ noncomputable def baseChangeApp (i₁ i₂ : ι)
     ((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map
       ((F.map (f i₂).op.toLoc).adj.counit.toNatTrans.app M))
 
+set_option backward.isDefEq.respectTransparency false in
+variable (F) in
+/-- [Kahn §2.1] Naturality of the base change morphism in the module argument.
+For `g : M₁ ⟶ M₂`, the base change commutes with functorial actions:
+`χ(M₁) ≫ (p₁)_*(p₂^*(g)) = (f i₁)^*((f i₂)_*(g)) ≫ χ(M₂)`. -/
+private lemma baseChangeApp_naturality (i₁ i₂ : ι)
+    {M₁ M₂ : (F.obj (.mk (op (X i₂)))).obj} (g : M₁ ⟶ M₂) :
+    baseChangeApp F sq i₁ i₂ M₁ ≫
+      (F.map (sq i₁ i₂).p₁.op.toLoc).r.toFunctor.map
+        (((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map g) =
+    (F.map (f i₁).op.toLoc).l.toFunctor.map
+      ((F.map (f i₂).op.toLoc).r.toFunctor.map g) ≫
+    baseChangeApp F sq i₁ i₂ M₂ := by
+  dsimp only [baseChangeApp]
+  rw [Category.assoc, ← Functor.map_comp, ← Category.assoc,
+      ← Adj.unit_naturality_assoc, ← Functor.map_comp]
+  congr 1; congr 1
+  -- Inner: (iso₁ ≫ l_p₂(ε₁)) ≫ l_p₂(g) = l_p₁(l_f₁(r₂(g))) ≫ iso₂ ≫ l_p₂(ε₂)
+  simp only [Category.assoc]
+  rw [← Functor.map_comp, ← Adj.counit_naturality, Functor.map_comp,
+      ← Category.assoc, ← Category.assoc]
+  congr 1
+  -- iso₁ ≫ target.map(r₂(g)) = source.map'(r₂(g)) ≫ iso₂
+  -- Bridge l_p₁, l_f₁ on RHS to (F.comp Adj.forget₁) form, then fold
+  rw [show (F.map (sq i₁ i₂).p₁.op.toLoc).l.toFunctor.map
+        ((F.map (f i₁).op.toLoc).l.toFunctor.map
+          ((F.map (f i₂).op.toLoc).r.toFunctor.map g)) =
+      ((F.comp Adj.forget₁).map (sq i₁ i₂).p₁.op.toLoc).toFunctor.map
+        (((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
+          ((F.map (f i₂).op.toLoc).r.toFunctor.map g)) from rfl,
+    ← Cat.Hom.comp_map]
+  -- Now both sides use isoMapOfCommSq's source/target composites
+  exact (((F.comp Adj.forget₁).isoMapOfCommSq
+    (pbCommSq sq i₁ i₂)).hom.toNatTrans.naturality
+    ((F.map (f i₂).op.toLoc).r.toFunctor.map g)).symm
+
 /-! ### Forward functor: DescentDataAsCoalgebra → DescentData'
 
 [B-R §1.3, Kahn Eq (1.3)] The forward direction constructs standard descent data from
@@ -269,7 +305,34 @@ noncomputable def DescentData'.fromDescentDataAsCoalgebraFunctor
   map {D₁ D₂} φ :=
     { hom i := φ.hom i
       comm i₁ i₂ := by
-        sorry }
+        dsimp only [DescentData'.toDescentDataAsCoalgebraObj]
+        simp only [Category.assoc]
+        -- Goal: η₁ ≫ r(D₁.hom) ≫ inv(χ₁) ≫ l_f₁(r_f₂(φ)) = φ ≫ η₂ ≫ r(D₂.hom) ≫ inv(χ₂)
+        -- [B-R §1.3] Use baseChangeApp naturality to commute inv(χ) past l_f₁(r_f₂(φ))
+        have h_nat := baseChangeApp_naturality F sq i₁ i₂ (φ.hom i₂)
+        rw [show inv (baseChangeApp F sq i₁ i₂ (D₁.obj i₂)) ≫
+              (F.map (f i₁).op.toLoc).l.toFunctor.map
+                ((F.map (f i₂).op.toLoc).r.toFunctor.map (φ.hom i₂)) =
+            (F.map (sq i₁ i₂).p₁.op.toLoc).r.toFunctor.map
+              (((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map (φ.hom i₂)) ≫
+            inv (baseChangeApp F sq i₁ i₂ (D₂.obj i₂)) from by
+          rw [IsIso.inv_comp_eq, ← Category.assoc, IsIso.eq_comp_inv]
+          exact h_nat.symm]
+        -- [B-R §1.3] Cancel inv(χ₂) from both sides
+        simp only [← Category.assoc]
+        congr 1
+        simp only [Category.assoc]
+        -- [B-R §1.3] Fold r_p₁ and use descent data morphism compatibility (φ.comm)
+        rw [← Functor.map_comp, ← φ.comm, Functor.map_comp]
+        -- [B-R §1.1] Cancel r(D₂.hom) from both sides
+        rw [← Category.assoc, ← Category.assoc]
+        congr 1
+        -- [B-R §1.1] Unit naturality for p₁^* ⊣ (p₁)_*
+        rw [show (F.map (sq i₁ i₂).p₁.op.toLoc).r.toFunctor.map
+              (((F.comp Adj.forget₁).map (sq i₁ i₂).p₁.op.toLoc).toFunctor.map (φ.hom i₁)) =
+            (F.map (sq i₁ i₂).p₁.op.toLoc).r.toFunctor.map
+              ((F.map (sq i₁ i₂).p₁.op.toLoc).l.toFunctor.map (φ.hom i₁)) from rfl]
+        exact Adj.unit_naturality (α := F.map (sq i₁ i₂).p₁.op.toLoc) (φ.hom i₁) }
 
 /-! ### The equivalence
 
