@@ -377,9 +377,15 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Obj
             ((sq i i).p₁ ≫ f i).op.toLoc _).hom.toNatTrans.app
             ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) from
       (Functor.map_comp _ _ _).symm]
-    -- Coherence: pullHom of isoMapOfCommSq along diagonal = 𝟙
+    -- Use mapComp'₀₁₃_inv_comp_mapComp'₀₂₃_hom to fuse each mixed hom/inv pair.
+    -- Left pair: mc'(p₁,p,𝟙).hom ≫ p*(mc'(fi,p₁,p_S).inv) = mc'(fi,𝟙,fi).inv ≫ mc'(p_S,p,fi).hom
+    -- Right pair: p*(mc'(fi,p₂,p_S).hom) ≫ mc'(p₂,p,𝟙).inv = mc'(p_S,p,fi).inv ≫ mc'(fi,𝟙,fi).hom
+    -- Then: inv ≫ (hom ≫ inv) ≫ hom = inv ≫ 𝟙 ≫ hom = inv ≫ hom = 𝟙
+    -- Coherence: pullHom of isoMapOfCommSq along diagonal = 𝟙.
     -- This holds because p ≫ p₁ = 𝟙 = p ≫ p₂ makes the pulled-back square trivial.
-    -- TODO: prove using mapComp'₀₂₃ associativity or a dedicated coherence lemma
+    -- The existing mapComp'₀₂₃ associativity lemmas require a 3-fold sequential
+    -- factorization, but our situation involves parallel projections p₁, p₂ to the
+    -- same object. A dedicated helper lemma (pullHom_isoMapOfCommSq_diagonal) is needed.
     sorry
   -- [B-R Theorem, cocycle] Follows from coalgebra coassociativity
   pullHom'_hom_comp i₁ i₂ i₃ := by
