@@ -389,15 +389,17 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Obj
     simp only [Category.assoc, ← reassoc_of% Cat.Hom₂.comp_app, Cat.Hom₂.comp_app,
       Iso.inv_hom_id, Cat.Hom₂.id_app, Category.id_comp, Category.comp_id,
       Iso.hom_inv_id]
-    -- Cancel mc'(p₂,p,𝟙).inv ≫ mc'(p₂,p,𝟙).hom = 𝟙 on LHS
+    -- The LHS has mc'(p₂,p,𝟙).inv.app ≫ mc'(p₂,p,𝟙).hom.app which = 𝟙.
+    -- Use NatIso.inv_hom_id to cancel directly.
     set_option backward.isDefEq.respectTransparency false in
-    simp only [← reassoc_of% Cat.Hom₂.comp_app, Cat.Hom₂.comp_app,
-      Iso.inv_hom_id, Cat.Hom₂.id_app, Category.comp_id, Category.id_comp]
-    -- Both sides share mc'(p₂,p,𝟙).hom.app as right factor, and LHS has
-    -- mc'(p₂,p,𝟙).inv ≫ mc'(p₂,p,𝟙).hom = 𝟙 that should cancel.
-    -- After cancellation: p*(iso_inner) = mc'(p₁,p,𝟙).inv.app
-    -- This is the key coherence identity: the inner isoMapOfCommSq, pulled
-    -- back by p, equals the "difference" between the two mapComp' sections.
+    erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
+      ((F.comp Adj.forget₁).mapComp' (sq i i).p₂.op.toLoc p.op.toLoc (𝟙 (X i)).op.toLoc
+        (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])))]
+    erw [Category.comp_id]
+    -- Remaining: p*(isoMapOfCommSq inner pair) = mc'(p₁,p,𝟙).inv ≫ mc'(p₂,p,𝟙).hom
+    -- This is a pseudofunctor coherence identity relating mapComp' under composition.
+    -- Provable via mapComp'₀₁₃_inv_comp_mapComp'₀₂₃_hom_app but erw times out.
+    -- Needs a dedicated helper or increased heartbeats.
     sorry
   -- [B-R Theorem, cocycle] Follows from coalgebra coassociativity
   pullHom'_hom_comp i₁ i₂ i₃ := by
