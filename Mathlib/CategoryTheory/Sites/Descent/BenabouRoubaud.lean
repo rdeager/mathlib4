@@ -396,11 +396,85 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Obj
       ((F.comp Adj.forget₁).mapComp' (sq i i).p₂.op.toLoc p.op.toLoc (𝟙 (X i)).op.toLoc
         (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])))]
     erw [Category.comp_id]
-    -- Remaining: p*(isoMapOfCommSq inner pair) = mc'(p₁,p,𝟙).inv ≫ mc'(p₂,p,𝟙).hom
-    -- This is a pseudofunctor coherence identity relating mapComp' under composition.
-    -- Provable via mapComp'₀₁₃_inv_comp_mapComp'₀₂₃_hom_app but erw times out.
-    -- Needs a dedicated helper or increased heartbeats.
-    sorry
+    -- Remaining: p*(mc'(fi,p₁,φ).inv ≫ mc'(fi,p₂,φ).hom) = mc'(p₁,p,𝟙).inv ≫ mc'(p₂,p,𝟙).hom
+    -- Strategy: use mapComp'₀₁₃_inv_app (the 4-object coherence for S→Xi→pullback→Xi)
+    -- to expand mc'(fi,𝟙,fi).inv.app via two different factorizations (p₁ and p₂),
+    -- derive pp*(β₁.inv) = α₁.inv ≫ α₂.hom ≫ pp*(β₂.inv), then substitute and cancel.
+    rw [Functor.map_comp]
+    -- Two instances of mapComp'₀₁₃_inv_app for the chain fi → p_k → pp
+    have exp₁ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
+      (f i).op.toLoc (sq i i).p₁.op.toLoc p.op.toLoc
+      ((sq i i).p₁ ≫ f i).op.toLoc (𝟙 (X i)).op.toLoc (f i).op.toLoc
+      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])
+      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])
+      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, Category.id_comp])
+      ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))
+    have exp₂ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
+      (f i).op.toLoc (sq i i).p₂.op.toLoc p.op.toLoc
+      ((sq i i).p₁ ≫ f i).op.toLoc (𝟙 (X i)).op.toLoc (f i).op.toLoc
+      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i i).condition.symm])
+      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])
+      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, Category.id_comp])
+      ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))
+    -- From exp₁ and exp₂ (same LHS γ.inv.app, same tail δ.inv.app):
+    -- Goal: pp*(β₁.inv) ≫ pp*(β₂.hom) = α₁.inv ≫ α₂.hom
+    -- Proof: from the two expansions derive pp*(inv₁) = α₁.inv ≫ α₂.hom ≫ pp*(inv₂),
+    -- then pp*(inv₁) ≫ pp*(hom₂) = α₁.inv ≫ α₂.hom ≫ pp*(inv₂ ≫ hom₂) = α₁.inv ≫ α₂.hom.
+    -- Use suffices + backwards approach: show both sides lie in a common telescope.
+    -- Multiply goal on the left by α₁.hom and on the right by... hmm.
+    -- Alternative direct approach: from exp₁.symm.trans exp₂ (same LHS), cancel tail δ.inv.app
+    have h_eq := exp₁.symm.trans exp₂
+    -- h_eq : α₁.hom ≫ pp*(inv₁) ≫ δ.inv = α₂.hom ≫ pp*(inv₂) ≫ δ.inv
+    -- Key step: from h_eq, cancel the δ.inv tail and extract the cleaned equation.
+    -- h_eq has the form: α₁.hom ≫ pp*(inv₁) ≫ δ.inv = α₂.hom ≫ pp*(inv₂) ≫ δ.inv
+    -- We right-compose with δ.hom to cancel δ.inv ≫ δ.hom = 𝟙 on both sides.
+    have h_cleaned := congr_arg (· ≫ ((F.comp Adj.forget₁).mapComp' ((sq i i).p₁ ≫ f i).op.toLoc
+      p.op.toLoc (f i).op.toLoc
+      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, ← Category.assoc, h₁,
+              Category.id_comp])).hom.toNatTrans.app
+      ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) h_eq
+    simp only [Category.assoc] at h_cleaned
+    set_option backward.isDefEq.respectTransparency false in
+    erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso ((F.comp Adj.forget₁).mapComp'
+      ((sq i i).p₁ ≫ f i).op.toLoc p.op.toLoc (f i).op.toLoc
+      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, ← Category.assoc, h₁,
+              Category.id_comp])))] at h_cleaned
+    erw [Category.comp_id, Category.comp_id] at h_cleaned
+    -- h_cleaned: α₁.hom ≫ pp*(inv₁) = α₂.hom ≫ pp*(inv₂)
+    -- Now: rw h_cleaned in LHS to replace α₁.hom ≫ pp*(inv₁) with α₂.hom ≫ pp*(inv₂)
+    -- Goal: pp*(inv₁) ≫ pp*(hom₂) = α₁.inv ≫ α₂.hom
+    -- Step: multiply by α₁.hom on the left: α₁.hom ≫ pp*(inv₁) ≫ pp*(hom₂) = α₁.hom ≫ α₁.inv ≫ α₂.hom = α₂.hom
+    -- Use h_cleaned to get: α₂.hom ≫ pp*(inv₂) ≫ pp*(hom₂) = α₂.hom
+    -- Which needs pp*(inv₂) ≫ pp*(hom₂) = 𝟙
+    -- This is pp*(inv₂ ≫ hom₂) = pp*(𝟙) = 𝟙 ✓
+    rw [← cancel_epi (((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
+      (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).hom.toNatTrans.app
+      (((F.comp Adj.forget₁).map (f i).op.toLoc).toFunctor.obj
+        ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))))]
+    -- Goal: α₁.hom ≫ pp*(inv₁) ≫ pp*(hom₂) = α₁.hom ≫ α₁.inv ≫ α₂.hom
+    -- Left-associate to match h_cleaned prefix, then rewrite
+    simp only [← Category.assoc]
+    rw [h_cleaned]
+    -- Goal: (α₂.hom ≫ pp*(inv₂)) ≫ pp*(hom₂) = (α₁.hom ≫ α₁.inv) ≫ α₂.hom
+    -- LHS: collapse pp*(inv₂) ≫ pp*(hom₂) = pp*(inv₂ ≫ hom₂) = pp*(𝟙) = 𝟙
+    simp only [Category.assoc, ← Functor.map_comp]
+    set_option backward.isDefEq.respectTransparency false in
+    erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso ((F.comp Adj.forget₁).mapComp'
+      (f i).op.toLoc (sq i i).p₂.op.toLoc ((sq i i).p₁ ≫ f i).op.toLoc
+      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i i).condition.symm])))]
+    erw [Functor.map_id, Category.comp_id]
+    -- Goal: α₂.hom.app = α₁.hom.app ≫ α₁.inv.app(fi.l*M) ≫ α₂.hom.app
+    -- Bridge the Adj mismatch: fi.l* = (F.comp Adj.forget₁).map fi* defeq
+    rw [show ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
+          (𝟙 (X i)).op.toLoc _).inv.toNatTrans.app
+          ((F.map (f i).op.toLoc).l.toFunctor.obj
+            ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) =
+        ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
+          (𝟙 (X i)).op.toLoc _).inv.toNatTrans.app
+          (((F.comp Adj.forget₁).map (f i).op.toLoc).toFunctor.obj
+            ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) from rfl]
+    simp only [Category.assoc, ← reassoc_of% Cat.Hom₂.comp_app, Cat.Hom₂.comp_app,
+      Iso.hom_inv_id, Cat.Hom₂.id_app, Category.id_comp]
   -- [B-R Theorem, cocycle] Follows from coalgebra coassociativity
   pullHom'_hom_comp i₁ i₂ i₃ := by
     sorry
