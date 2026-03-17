@@ -429,8 +429,83 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
     (f := ((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁.op.toLoc).toFunctor.map _),
     key₂]
   simp only [Category.assoc]
-  -- TODO: remaining steps — iso naturality for η₂, triangle identity, iso block collapse
-  sorry
+  -- Step 18: Fold p₁₂*(sq.p₁*(l₁(η₂))) ≫ p₁₂*(iso₁₂.app) inside p₁₂*
+  conv_lhs =>
+    rw [← Functor.map_comp_assoc
+      (((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc).toFunctor)
+      (((F.comp Adj.forget₁).map (sq i₁ i₂).p₁.op.toLoc).toFunctor.map
+        (((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
+          ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
+            ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))))
+      (((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i₁ i₂)).hom.toNatTrans.app
+        ((F.map (f i₂).op.toLoc).r.toFunctor.obj
+          ((F.map (f i₂).op.toLoc).l.toFunctor.obj
+            ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))))]
+  -- Step 19: Apply iso₁₂ naturality at η₂ (forward direction)
+  set_option backward.isDefEq.respectTransparency false in
+  erw [((F.comp Adj.forget₁).isoMapOfCommSq
+    (pbCommSq sq i₁ i₂)).hom.toNatTrans.naturality
+    ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
+      ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))]
+  -- Convert Cat composition form
+  erw [show ((F.comp Adj.forget₁).map (f i₂).op.toLoc ≫
+    (F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map
+      ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
+        ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃))) =
+    ((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map
+      (((F.comp Adj.forget₁).map (f i₂).op.toLoc).toFunctor.map
+        ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
+          ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))) from rfl]
+  simp only [Functor.map_comp, Category.assoc]
+  -- Step 20: Fold l₂(η₂) ≫ ε₂ inside sq.p₂* and apply triangle identity
+  conv_lhs =>
+    rw [← Functor.map_comp_assoc
+      (((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc).toFunctor)
+      (((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map
+        (((F.comp Adj.forget₁).map (f i₂).op.toLoc).toFunctor.map
+          ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
+            ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))))
+      (((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map
+        ((F.map (f i₂).op.toLoc).adj.counit.toNatTrans.app
+          ((F.map (f i₂).op.toLoc).l.toFunctor.obj
+            ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃))))),
+      ← Functor.map_comp
+        (((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor)]
+  set_option backward.isDefEq.respectTransparency false in
+  erw [Adj.left_triangle_components (F.map (f i₂).op.toLoc)]
+  erw [Functor.map_id, Functor.map_id]
+  simp only [Category.id_comp]
+  -- Step 21: Goal has two iso blocks (LHS) vs one (RHS), both ≫ p₃*(ε₃).
+  -- State the goal in folded pullHom form, prove it, then convert via dsimp.
+  suffices h :
+      LocallyDiscreteOpToCat.pullHom
+        (((F.comp Adj.forget₁).isoMapOfCommSq
+          (pbCommSq sq i₁ i₂)).hom.toNatTrans.app
+          ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))
+        (sq₃ i₁ i₂ i₃).p₁₂ (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₂ ≫
+      LocallyDiscreteOpToCat.pullHom
+        (((F.comp Adj.forget₁).isoMapOfCommSq
+          (pbCommSq sq i₂ i₃)).hom.toNatTrans.app
+          ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))
+        (sq₃ i₁ i₂ i₃).p₂₃ (sq₃ i₁ i₂ i₃).p₂ (sq₃ i₁ i₂ i₃).p₃ ≫
+      ((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₃.op.toLoc).toFunctor.map
+        ((F.map (f i₃).op.toLoc).adj.counit.toNatTrans.app (D.obj i₃)) =
+      LocallyDiscreteOpToCat.pullHom
+        (((F.comp Adj.forget₁).isoMapOfCommSq
+          (pbCommSq sq i₁ i₃)).hom.toNatTrans.app
+          ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))
+        (sq₃ i₁ i₂ i₃).p₁₃ (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₃ ≫
+      ((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₃.op.toLoc).toFunctor.map
+        ((F.map (f i₃).op.toLoc).adj.counit.toNatTrans.app (D.obj i₃)) by
+    dsimp only [LocallyDiscreteOpToCat.pullHom] at h
+    simp only [Category.assoc] at h
+    exact h
+  -- Now prove h: replace each pullHom(iso.app)(p) with isoMapOfCommSq₃.app
+  rw [pullHom_isoMapOfCommSq F sq sq₃ i₁ i₂ i₃,
+    pullHom_isoMapOfCommSq' F sq sq₃ i₁ i₂ i₃,
+    pullHom_isoMapOfCommSq'' F sq sq₃ i₁ i₂ i₃,
+    ← Category.assoc,
+    isoMapOfCommSq₃_comp F sq sq₃ i₁ i₂ i₃]
 
 set_option backward.isDefEq.respectTransparency false in
 variable (F) in
