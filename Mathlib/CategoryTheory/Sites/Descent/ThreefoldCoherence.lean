@@ -163,6 +163,90 @@ lemma pullHom_isoMapOfCommSq (i₁ i₂ i₃ : ι)
 
 set_option backward.isDefEq.respectTransparency false in
 variable (F) in
+/-- Variant of `pullHom_isoMapOfCommSq` for the `(i₂, i₃)` square pulled back along `p₂₃`. -/
+lemma pullHom_isoMapOfCommSq' (i₁ i₂ i₃ : ι)
+    (M : (F.obj (.mk (Opposite.op S))).obj) :
+    LocallyDiscreteOpToCat.pullHom
+      (((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i₂ i₃)).hom.toNatTrans.app M)
+      (sq₃ i₁ i₂ i₃).p₂₃ (sq₃ i₁ i₂ i₃).p₂ (sq₃ i₁ i₂ i₃).p₃ =
+    ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq₃' sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M := by
+  rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq sq i₂ i₃)
+    ((sq i₂ i₃).p₁ ≫ f i₂).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]),
+    (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃' sq sq₃ i₁ i₂ i₃)
+    ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])]
+  simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app]
+  dsimp only [LocallyDiscreteOpToCat.pullHom]
+  simp only [Functor.map_comp, Category.assoc]
+  have exp₁ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
+    (f i₂).op.toLoc (sq i₂ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₂₃.op.toLoc
+    ((sq i₂ i₃).p₁ ≫ f i₂).op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
+    ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₂₃_p₂])
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]) M
+  have exp₂ := (F.comp Adj.forget₁).mapComp'₀₂₃_inv_app
+    (f i₃).op.toLoc (sq i₂ i₃).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₂₃.op.toLoc
+    ((sq i₂ i₃).p₁ ≫ f i₂).op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc
+    ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i₂ i₃).condition.symm])
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₂₃_p₃])
+    (by simp [← Quiver.Hom.comp_toLoc, ← op_comp])
+    M
+  conv_rhs => rw [exp₁]
+  simp only [Category.assoc]
+  conv_rhs => rw [exp₂]
+  simp only [Category.assoc]
+  set_option backward.isDefEq.respectTransparency false in
+  erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
+    ((F.comp Adj.forget₁).mapComp' (f i₃).op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc
+      ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc
+      (by simp [← Quiver.Hom.comp_toLoc, ← op_comp])))]
+  erw [Category.comp_id]
+
+set_option backward.isDefEq.respectTransparency false in
+variable (F) in
+/-- Variant of `pullHom_isoMapOfCommSq` for the `(i₁, i₃)` square pulled back along `p₁₃`. -/
+lemma pullHom_isoMapOfCommSq'' (i₁ i₂ i₃ : ι)
+    (M : (F.obj (.mk (Opposite.op S))).obj) :
+    LocallyDiscreteOpToCat.pullHom
+      (((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i₁ i₃)).hom.toNatTrans.app M)
+      (sq₃ i₁ i₂ i₃).p₁₃ (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₃ =
+    ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq₃'' sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M := by
+  rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq sq i₁ i₃)
+    ((sq i₁ i₃).p₁ ≫ f i₁).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]),
+    (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃'' sq sq₃ i₁ i₂ i₃)
+    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])]
+  simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app]
+  dsimp only [LocallyDiscreteOpToCat.pullHom]
+  simp only [Functor.map_comp, Category.assoc]
+  have exp₁ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
+    (f i₁).op.toLoc (sq i₁ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₃.op.toLoc
+    ((sq i₁ i₃).p₁ ≫ f i₁).op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
+    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₃_p₁])
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]) M
+  have exp₂ := (F.comp Adj.forget₁).mapComp'₀₂₃_inv_app
+    (f i₃).op.toLoc (sq i₁ i₃).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁₃.op.toLoc
+    ((sq i₁ i₃).p₁ ≫ f i₁).op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc
+    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i₁ i₃).condition.symm])
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₃_p₃])
+    (by simp [← Quiver.Hom.comp_toLoc, ← op_comp])
+    M
+  conv_rhs => rw [exp₁]
+  simp only [Category.assoc]
+  conv_rhs => rw [exp₂]
+  simp only [Category.assoc]
+  set_option backward.isDefEq.respectTransparency false in
+  erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
+    ((F.comp Adj.forget₁).mapComp' (f i₃).op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc
+      ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
+      (by simp [← Quiver.Hom.comp_toLoc, ← op_comp])))]
+  erw [Category.comp_id]
+
+set_option backward.isDefEq.respectTransparency false in
+variable (F) in
 /-- **Threefold cocycle** [Kahn, Proposition 3.3]. The forward-constructed descent datum
 satisfies the cocycle condition: pulling back `ξ₁₂` and `ξ₂₃` to the threefold pullback
 and composing gives `ξ₁₃`.
