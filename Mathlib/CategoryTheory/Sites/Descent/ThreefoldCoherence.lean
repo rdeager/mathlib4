@@ -180,18 +180,25 @@ lemma pullHom'_forwardHom_comp (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ 
   rw [DescentData'.pullHom'₁₂_eq_pullHom_of_chosenPullback₃,
     DescentData'.pullHom'₂₃_eq_pullHom_of_chosenPullback₃,
     DescentData'.pullHom'₁₃_eq_pullHom_of_chosenPullback₃]
-  -- Step 2: Unfold pullHom and forwardHom
-  dsimp only [LocallyDiscreteOpToCat.pullHom, forwardHom]
-  -- Step 3: Distribute functor maps and reassociate
+  -- Step 2: Unfold pullHom only (keep forwardHom folded)
+  dsimp only [LocallyDiscreteOpToCat.pullHom]
+  -- Goal is now: mc'₁.hom ≫ p₁₂*(fwd₁₂) ≫ mc'₂.inv ≫ mc'₃.hom ≫ p₂₃*(fwd₂₃) ≫ mc'₄.inv
+  --           = mc'₅.hom ≫ p₁₃*(fwd₁₃) ≫ mc'₆.inv
+  simp only [Category.assoc]
+  -- Step 3: Unfold forwardHom, distribute, push D.hom/ε through mc'
+  dsimp only [forwardHom]
   simp only [Functor.map_comp, Category.assoc]
-  -- Step 4: Push D.hom i₁ i₂ past mc'₁ on LHS
+  -- Push D.hom₁₂ out of block 1 past mc'₁
   set_option backward.isDefEq.respectTransparency false in
   conv_lhs =>
     rw [← Category.assoc, ← (F.comp Adj.forget₁).mapComp'_hom_naturality
       (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
       (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₁]) (D.hom i₁ i₂)]
   simp only [Category.assoc]
-  -- Step 5: Push D.hom i₂ i₃ past mc'₃ on LHS
+  -- Push all ε past mc'_inv
+  set_option backward.isDefEq.respectTransparency false in
+  simp only [mapComp'_inv_naturality]
+  -- Push D.hom₂₃ past mc'₃ on LHS
   set_option backward.isDefEq.respectTransparency false in
   conv_lhs =>
     rw [← Category.assoc
@@ -201,16 +208,27 @@ lemma pullHom'_forwardHom_comp (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ 
         (sq i₂ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₂₃.op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
         (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₂₃_p₂]) (D.hom i₂ i₃)]
   simp only [Category.assoc]
-  -- Step 6: Push D.hom i₁ i₃ past mc'₅ on RHS
+  -- Push D.hom₁₃ past mc'₅ on RHS
   set_option backward.isDefEq.respectTransparency false in
   conv_rhs =>
     rw [← Category.assoc, ← (F.comp Adj.forget₁).mapComp'_hom_naturality
       (sq i₁ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₃.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
       (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₃_p₁]) (D.hom i₁ i₃)]
   simp only [Category.assoc]
-  -- Step 7: Push all ε past mc'_inv on both sides
+  -- Also push D.hom₂₃ back through mc'₂.inv on LHS (reverse naturality)
   set_option backward.isDefEq.respectTransparency false in
-  simp only [mapComp'_inv_naturality]
+  rw [← (F.comp Adj.forget₁).mapComp'_inv_naturality_assoc
+    (sq i₁ i₂).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₂]) (D.hom i₂ i₃)]
+  -- TODO(S104): Steps 8-15 require careful term-level rewriting:
+  -- 8. Fold p₁₂*(sq.p₂*(ε₂)) ≫ p₁₂*(sq.p₂*(D.hom₂₃)) via ← Functor.map_comp_assoc
+  -- 9. Apply Adj.counit_naturality inside: ε₂ ≫ D.hom₂₃ = l₂(r₂(D.hom₂₃)) ≫ ε₂
+  -- 10. Use isoMapOfCommSq naturality to push r₂(D.hom₂₃) through iso₁₂
+  -- 11. Push l₁(r₂(D.hom₂₃)) through mc'₁ to sq₃.p₁ level
+  -- 12. Apply congr_arg p₁*.map D.coassoc to fold D.hom₁₂ ≫ l₁(r₂(D.hom₂₃))
+  -- 13. Push l₁(η₂) back through mc'₁ and iso
+  -- 14. Use Adj.left_triangle_components to cancel l(η) ≫ ε = id
+  -- 15. Collapse remaining iso blocks using pullHom_isoMapOfCommSq variants + isoMapOfCommSq₃_comp
   sorry
 
 end ThreefoldCoherence
