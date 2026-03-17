@@ -304,15 +304,101 @@ lemma pullHom'_forwardHom_comp (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ 
   rw [← (F.comp Adj.forget₁).mapComp'_inv_naturality_assoc
     (sq i₁ i₂).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
     (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₂]) (D.hom i₂ i₃)]
-  -- TODO(S104): Steps 8-15 require careful term-level rewriting:
-  -- 8. Fold p₁₂*(sq.p₂*(ε₂)) ≫ p₁₂*(sq.p₂*(D.hom₂₃)) via ← Functor.map_comp_assoc
-  -- 9. Apply Adj.counit_naturality inside: ε₂ ≫ D.hom₂₃ = l₂(r₂(D.hom₂₃)) ≫ ε₂
-  -- 10. Use isoMapOfCommSq naturality to push r₂(D.hom₂₃) through iso₁₂
-  -- 11. Push l₁(r₂(D.hom₂₃)) through mc'₁ to sq₃.p₁ level
-  -- 12. Apply congr_arg p₁*.map D.coassoc to fold D.hom₁₂ ≫ l₁(r₂(D.hom₂₃))
-  -- 13. Push l₁(η₂) back through mc'₁ and iso
-  -- 14. Use Adj.left_triangle_components to cancel l(η) ≫ ε = id
-  -- 15. Collapse remaining iso blocks using pullHom_isoMapOfCommSq variants + isoMapOfCommSq₃_comp
+  -- Step 8: Fold ε₂ ≫ D.hom₂₃ inside p₁₂*(sq.p₂*(...))
+  conv_lhs =>
+    rw [← Functor.map_comp_assoc
+      (((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc).toFunctor)
+      (((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map
+        ((F.map (f i₂).op.toLoc).adj.counit.toNatTrans.app (D.obj i₂)))
+      (((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map (D.hom i₂ i₃)),
+      ← Functor.map_comp
+        (((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor)
+        ((F.map (f i₂).op.toLoc).adj.counit.toNatTrans.app (D.obj i₂))
+        (D.hom i₂ i₃)]
+  -- Step 9: Apply counit naturality: ε₂ ≫ D.hom₂₃ = l₂(r₂(D.hom₂₃)) ≫ ε₂
+  rw [show (F.map (f i₂).op.toLoc).adj.counit.toNatTrans.app (D.obj i₂) ≫ D.hom i₂ i₃ =
+    (F.map (f i₂).op.toLoc).l.toFunctor.map
+      ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃)) ≫
+    (F.map (f i₂).op.toLoc).adj.counit.toNatTrans.app _ from
+    (Adj.counit_naturality (F.map (f i₂).op.toLoc) (D.hom i₂ i₃)).symm]
+  -- Step 10: Distribute l₂(r₂(D.hom₂₃)) ≫ ε₂ through sq.p₂* and p₁₂*
+  simp only [Functor.map_comp, Category.assoc]
+  -- Step 11: Fold iso₁₂.app ≫ sq.p₂*(l₂(r₂(D.hom₂₃))) inside p₁₂* for naturality
+  conv_lhs =>
+    rw [← Functor.map_comp_assoc
+      (((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc).toFunctor)
+      (((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i₁ i₂)).hom.toNatTrans.app
+        ((F.map (f i₂).op.toLoc).r.toFunctor.obj (D.obj i₂)))
+      (((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map
+        ((F.map (f i₂).op.toLoc).l.toFunctor.map
+          ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃))))]
+  -- Step 12: Apply iso₁₂ naturality at r₂(D.hom₂₃) to swap iso and l₂(r₂(D.hom₂₃))
+  -- NatTrans.naturality produces Cat-composition form; erw handles the defeq
+  set_option backward.isDefEq.respectTransparency false in
+  erw [← ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i₁ i₂)).hom.toNatTrans.naturality
+    ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃))]
+  -- Step 13: Convert Cat composition form to explicit functor application
+  -- (fi₁ ≫ sq.p₁).toFunctor.map(x) = sq.p₁*(l₁(x)) by definitional equality
+  erw [show ((F.comp Adj.forget₁).map (f i₁).op.toLoc ≫
+    (F.comp Adj.forget₁).map (sq i₁ i₂).p₁.op.toLoc).toFunctor.map
+      ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃)) =
+    ((F.comp Adj.forget₁).map (sq i₁ i₂).p₁.op.toLoc).toFunctor.map
+      (((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
+        ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃))) from rfl]
+  simp only [Functor.map_comp, Category.assoc]
+  -- Step 14: Push l₁(r₂(D.hom₂₃)) from p₁₂*(sq.p₁*(...)) past mc'₁.hom to p₁ level
+  -- Instantiate mapComp'_hom_naturality with l₁(r₂(D.hom₂₃))
+  have key₁₄ := (F.comp Adj.forget₁).mapComp'_hom_naturality
+    (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
+    (a := ((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
+      ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃)))
+  -- Try direct rewrite with key₁₄
+  set_option backward.isDefEq.respectTransparency false in
+  erw [show
+    ((F.comp Adj.forget₁).mapComp' (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc
+      (sq₃ i₁ i₂ i₃).p₁.op.toLoc _).hom.toNatTrans.app
+      ((F.map (f i₁).op.toLoc).l.toFunctor.obj ((F.map (f i₂).op.toLoc).r.toFunctor.obj (D.obj i₂))) =
+    ((F.comp Adj.forget₁).mapComp' (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc
+      (sq₃ i₁ i₂ i₃).p₁.op.toLoc _).hom.toNatTrans.app
+      (((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.obj
+        ((F.map (f i₂).op.toLoc).r.toFunctor.obj (D.obj i₂))) from rfl]
+  set_option backward.isDefEq.respectTransparency false in
+  rw [← Category.assoc
+    (f := ((F.comp Adj.forget₁).mapComp' (sq i₁ i₂).p₁.op.toLoc
+      (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc _).hom.toNatTrans.app _),
+    ← key₁₄]
+  simp only [Category.assoc]
+  -- Step 15: Fold p₁*(D.hom₁₂) ≫ p₁*(l₁(r₂(D.hom₂₃))) and apply D.coassoc
+  rw [← Functor.map_comp_assoc]
+  -- D.coassoc uses (F.map ...).l.toFunctor, need erw for the defeq bridge
+  set_option backward.isDefEq.respectTransparency false in
+  erw [D.coassoc i₁ i₂ i₃]
+  simp only [Functor.map_comp, Category.assoc]
+  -- Step 16: Strip common prefix p₁*(D.hom₁₃)
+  congr 1
+  -- Step 17: Push l₁(η₂) past mc'₁.hom to p₁₂ level (forward mapComp'_hom_naturality)
+  have key₁₇ := (F.comp Adj.forget₁).mapComp'_hom_naturality
+    (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
+    (a := ((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
+      ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
+        ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃))))
+  set_option backward.isDefEq.respectTransparency false in
+  erw [show ((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁.op.toLoc).toFunctor.map
+    ((F.map (f i₁).op.toLoc).l.toFunctor.map
+      ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
+        ((F.map (f i₃).op.toLoc).r.toFunctor.1 (D.obj i₃)))) =
+    ((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁.op.toLoc).toFunctor.map
+      (((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
+        ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
+          ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))) from rfl]
+  -- key₁₇: p₁*(a) ≫ mc'.hom(Y) = mc'.hom(X) ≫ p₁₂*(sq.p₁*(a))
+  set_option backward.isDefEq.respectTransparency false in
+  erw [← Category.assoc
+    (f := ((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁.op.toLoc).toFunctor.map _),
+    key₁₇]
+  simp only [Category.assoc]
   sorry
 
 end ThreefoldCoherence
