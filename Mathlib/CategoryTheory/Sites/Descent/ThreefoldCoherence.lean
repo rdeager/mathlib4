@@ -247,29 +247,22 @@ lemma pullHom_isoMapOfCommSq'' (i₁ i₂ i₃ : ι)
 
 set_option backward.isDefEq.respectTransparency false in
 variable (F) in
-/-- **Threefold cocycle** [Kahn, Proposition 3.3]. The forward-constructed descent datum
-satisfies the cocycle condition: pulling back `ξ₁₂` and `ξ₂₃` to the threefold pullback
-and composing gives `ξ₁₃`.
+/-- **Threefold cocycle at pullHom level** [Kahn, Proposition 3.3].
+Pulling back `forwardHom(i₁,i₂)` and `forwardHom(i₂,i₃)` to the threefold pullback
+via `pullHom` and composing gives `forwardHom(i₁,i₃)` pulled back.
 
-The proof uses the coalgebra coassociativity `D.coassoc` and the adjunction triangle
-identity `l(η) ≫ ε = 𝟙`. -/
-lemma pullHom'_forwardHom_comp (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) :
-    DescentData'.pullHom' (forwardHom F sq D) (sq₃ i₁ i₂ i₃).p
-      (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₂ ≫
-    DescentData'.pullHom' (forwardHom F sq D) (sq₃ i₁ i₂ i₃).p
-      (sq₃ i₁ i₂ i₃).p₂ (sq₃ i₁ i₂ i₃).p₃ =
-    DescentData'.pullHom' (forwardHom F sq D) (sq₃ i₁ i₂ i₃).p
-      (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₃ := by
-  -- Step 1: Rewrite pullHom' → pullHom via ChosenPullback₃
-  rw [DescentData'.pullHom'₁₂_eq_pullHom_of_chosenPullback₃,
-    DescentData'.pullHom'₂₃_eq_pullHom_of_chosenPullback₃,
-    DescentData'.pullHom'₁₃_eq_pullHom_of_chosenPullback₃]
-  -- Step 2: Unfold pullHom only (keep forwardHom folded)
+The proof uses counit naturality, iso naturality, coalgebra coassociativity `D.coassoc`,
+and the adjunction triangle identity `l(η) ≫ ε = 𝟙`. -/
+lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) :
+    LocallyDiscreteOpToCat.pullHom (forwardHom F sq D i₁ i₂)
+      (sq₃ i₁ i₂ i₃).p₁₂ (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₂ ≫
+    LocallyDiscreteOpToCat.pullHom (forwardHom F sq D i₂ i₃)
+      (sq₃ i₁ i₂ i₃).p₂₃ (sq₃ i₁ i₂ i₃).p₂ (sq₃ i₁ i₂ i₃).p₃ =
+    LocallyDiscreteOpToCat.pullHom (forwardHom F sq D i₁ i₃)
+      (sq₃ i₁ i₂ i₃).p₁₃ (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₃ := by
+  -- Unfold pullHom and forwardHom, distribute
   dsimp only [LocallyDiscreteOpToCat.pullHom]
-  -- Goal is now: mc'₁.hom ≫ p₁₂*(fwd₁₂) ≫ mc'₂.inv ≫ mc'₃.hom ≫ p₂₃*(fwd₂₃) ≫ mc'₄.inv
-  --           = mc'₅.hom ≫ p₁₃*(fwd₁₃) ≫ mc'₆.inv
   simp only [Category.assoc]
-  -- Step 3: Unfold forwardHom, distribute, push D.hom/ε through mc'
   dsimp only [forwardHom]
   simp only [Functor.map_comp, Category.assoc]
   -- Push D.hom₁₂ out of block 1 past mc'₁
@@ -299,12 +292,12 @@ lemma pullHom'_forwardHom_comp (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ 
       (sq i₁ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₃.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
       (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₃_p₁]) (D.hom i₁ i₃)]
   simp only [Category.assoc]
-  -- Also push D.hom₂₃ back through mc'₂.inv on LHS (reverse naturality)
+  -- Push D.hom₂₃ back through mc'₂.inv on LHS (reverse naturality)
   set_option backward.isDefEq.respectTransparency false in
   rw [← (F.comp Adj.forget₁).mapComp'_inv_naturality_assoc
     (sq i₁ i₂).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
     (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₂]) (D.hom i₂ i₃)]
-  -- Step 8: Fold ε₂ ≫ D.hom₂₃ inside p₁₂*(sq.p₂*(...))
+  -- Fold ε₂ ≫ D.hom₂₃ inside p₁₂*(sq.p₂*(...))
   conv_lhs =>
     rw [← Functor.map_comp_assoc
       (((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc).toFunctor)
@@ -315,15 +308,15 @@ lemma pullHom'_forwardHom_comp (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ 
         (((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor)
         ((F.map (f i₂).op.toLoc).adj.counit.toNatTrans.app (D.obj i₂))
         (D.hom i₂ i₃)]
-  -- Step 9: Apply counit naturality: ε₂ ≫ D.hom₂₃ = l₂(r₂(D.hom₂₃)) ≫ ε₂
+  -- Apply counit naturality: ε₂ ≫ D.hom₂₃ = l₂(r₂(D.hom₂₃)) ≫ ε₂
   rw [show (F.map (f i₂).op.toLoc).adj.counit.toNatTrans.app (D.obj i₂) ≫ D.hom i₂ i₃ =
     (F.map (f i₂).op.toLoc).l.toFunctor.map
       ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃)) ≫
     (F.map (f i₂).op.toLoc).adj.counit.toNatTrans.app _ from
     (Adj.counit_naturality (F.map (f i₂).op.toLoc) (D.hom i₂ i₃)).symm]
-  -- Step 10: Distribute l₂(r₂(D.hom₂₃)) ≫ ε₂ through sq.p₂* and p₁₂*
+  -- Distribute l₂(r₂(D.hom₂₃)) ≫ ε₂ through sq.p₂* and p₁₂*
   simp only [Functor.map_comp, Category.assoc]
-  -- Step 11: Fold iso₁₂.app ≫ sq.p₂*(l₂(r₂(D.hom₂₃))) inside p₁₂* for naturality
+  -- Fold iso₁₂.app ≫ sq.p₂*(l₂(r₂(D.hom₂₃))) inside p₁₂* for iso naturality
   conv_lhs =>
     rw [← Functor.map_comp_assoc
       (((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc).toFunctor)
@@ -332,13 +325,11 @@ lemma pullHom'_forwardHom_comp (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ 
       (((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map
         ((F.map (f i₂).op.toLoc).l.toFunctor.map
           ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃))))]
-  -- Step 12: Apply iso₁₂ naturality at r₂(D.hom₂₃) to swap iso and l₂(r₂(D.hom₂₃))
-  -- NatTrans.naturality produces Cat-composition form; erw handles the defeq
+  -- Apply iso₁₂ naturality at r₂(D.hom₂₃)
   set_option backward.isDefEq.respectTransparency false in
   erw [← ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i₁ i₂)).hom.toNatTrans.naturality
     ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃))]
-  -- Step 13: Convert Cat composition form to explicit functor application
-  -- (fi₁ ≫ sq.p₁).toFunctor.map(x) = sq.p₁*(l₁(x)) by definitional equality
+  -- Convert Cat composition form to explicit functor application
   erw [show ((F.comp Adj.forget₁).map (f i₁).op.toLoc ≫
     (F.comp Adj.forget₁).map (sq i₁ i₂).p₁.op.toLoc).toFunctor.map
       ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃)) =
@@ -346,39 +337,35 @@ lemma pullHom'_forwardHom_comp (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ 
       (((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
         ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃))) from rfl]
   simp only [Functor.map_comp, Category.assoc]
-  -- Step 14: Push l₁(r₂(D.hom₂₃)) from p₁₂*(sq.p₁*(...)) past mc'₁.hom to p₁ level
-  -- Instantiate mapComp'_hom_naturality with l₁(r₂(D.hom₂₃))
-  have key₁₄ := (F.comp Adj.forget₁).mapComp'_hom_naturality
+  -- Push l₁(r₂(D.hom₂₃)) from p₁₂*(sq.p₁*(...)) past mc'₁.hom to p₁ level
+  have key₁ := (F.comp Adj.forget₁).mapComp'_hom_naturality
     (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
     (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
     (a := ((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
       ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃)))
-  -- Try direct rewrite with key₁₄
   set_option backward.isDefEq.respectTransparency false in
-  erw [show
-    ((F.comp Adj.forget₁).mapComp' (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc
-      (sq₃ i₁ i₂ i₃).p₁.op.toLoc _).hom.toNatTrans.app
-      ((F.map (f i₁).op.toLoc).l.toFunctor.obj ((F.map (f i₂).op.toLoc).r.toFunctor.obj (D.obj i₂))) =
-    ((F.comp Adj.forget₁).mapComp' (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc
-      (sq₃ i₁ i₂ i₃).p₁.op.toLoc _).hom.toNatTrans.app
-      (((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.obj
-        ((F.map (f i₂).op.toLoc).r.toFunctor.obj (D.obj i₂))) from rfl]
+  erw [show ((F.comp Adj.forget₁).mapComp' (sq i₁ i₂).p₁.op.toLoc
+    (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc _).hom.toNatTrans.app
+    ((F.map (f i₁).op.toLoc).l.toFunctor.obj
+      ((F.map (f i₂).op.toLoc).r.toFunctor.obj (D.obj i₂))) =
+    ((F.comp Adj.forget₁).mapComp' (sq i₁ i₂).p₁.op.toLoc
+      (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc _).hom.toNatTrans.app
+    (((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.obj
+      ((F.map (f i₂).op.toLoc).r.toFunctor.obj (D.obj i₂))) from rfl]
   set_option backward.isDefEq.respectTransparency false in
-  rw [← Category.assoc
-    (f := ((F.comp Adj.forget₁).mapComp' (sq i₁ i₂).p₁.op.toLoc
-      (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc _).hom.toNatTrans.app _),
-    ← key₁₄]
+  rw [← Category.assoc (f := ((F.comp Adj.forget₁).mapComp' (sq i₁ i₂).p₁.op.toLoc
+    (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc _).hom.toNatTrans.app _),
+    ← key₁]
   simp only [Category.assoc]
-  -- Step 15: Fold p₁*(D.hom₁₂) ≫ p₁*(l₁(r₂(D.hom₂₃))) and apply D.coassoc
+  -- Apply D.coassoc: D.hom₁₂ ≫ l₁(r₂(D.hom₂₃)) = D.hom₁₃ ≫ l₁(η₂)
   rw [← Functor.map_comp_assoc]
-  -- D.coassoc uses (F.map ...).l.toFunctor, need erw for the defeq bridge
   set_option backward.isDefEq.respectTransparency false in
   erw [D.coassoc i₁ i₂ i₃]
   simp only [Functor.map_comp, Category.assoc]
-  -- Step 16: Strip common prefix p₁*(D.hom₁₃)
+  -- Strip common prefix p₁*(D.hom₁₃)
   congr 1
-  -- Step 17: Push l₁(η₂) past mc'₁.hom to p₁₂ level (forward mapComp'_hom_naturality)
-  have key₁₇ := (F.comp Adj.forget₁).mapComp'_hom_naturality
+  -- Push l₁(η₂) past mc'₁.hom to p₁₂ level
+  have key₂ := (F.comp Adj.forget₁).mapComp'_hom_naturality
     (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
     (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
     (a := ((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
@@ -393,13 +380,34 @@ lemma pullHom'_forwardHom_comp (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ 
       (((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
         ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
           ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))) from rfl]
-  -- key₁₇: p₁*(a) ≫ mc'.hom(Y) = mc'.hom(X) ≫ p₁₂*(sq.p₁*(a))
   set_option backward.isDefEq.respectTransparency false in
   erw [← Category.assoc
     (f := ((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁.op.toLoc).toFunctor.map _),
-    key₁₇]
+    key₂]
   simp only [Category.assoc]
+  -- TODO: remaining steps — iso naturality for η₂, triangle identity, iso block collapse
   sorry
+
+set_option backward.isDefEq.respectTransparency false in
+variable (F) in
+/-- **Threefold cocycle** [Kahn, Proposition 3.3]. The forward-constructed descent datum
+satisfies the cocycle condition: pulling back `ξ₁₂` and `ξ₂₃` to the threefold pullback
+and composing gives `ξ₁₃`.
+
+The proof uses the coalgebra coassociativity `D.coassoc` and the adjunction triangle
+identity `l(η) ≫ ε = 𝟙`. -/
+lemma pullHom'_forwardHom_comp (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) :
+    DescentData'.pullHom' (forwardHom F sq D) (sq₃ i₁ i₂ i₃).p
+      (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₂ ≫
+    DescentData'.pullHom' (forwardHom F sq D) (sq₃ i₁ i₂ i₃).p
+      (sq₃ i₁ i₂ i₃).p₂ (sq₃ i₁ i₂ i₃).p₃ =
+    DescentData'.pullHom' (forwardHom F sq D) (sq₃ i₁ i₂ i₃).p
+      (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₃ := by
+  -- Rewrite pullHom' → pullHom via ChosenPullback₃, then apply the cocycle lemma
+  rw [DescentData'.pullHom'₁₂_eq_pullHom_of_chosenPullback₃,
+    DescentData'.pullHom'₂₃_eq_pullHom_of_chosenPullback₃,
+    DescentData'.pullHom'₁₃_eq_pullHom_of_chosenPullback₃]
+  exact forwardHom_cocycle F sq sq₃ D i₁ i₂ i₃
 
 end ThreefoldCoherence
 
