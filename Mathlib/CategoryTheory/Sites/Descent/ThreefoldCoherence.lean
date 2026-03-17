@@ -67,6 +67,100 @@ noncomputable def forwardHom (D : F.DescentDataAsCoalgebra f) (i₁ i₂ : ι) :
   ((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map
     ((F.map (f i₂).op.toLoc).adj.counit.toNatTrans.app (D.obj i₂))
 
+/-- The pullback CommSq for the threefold pullback projection `(sq₃.p₁, sq₃.p₂)`.
+Both paths `sq₃.p₁ ≫ f i₁` and `sq₃.p₂ ≫ f i₂` equal `sq₃.p`. -/
+def pbCommSq₃ (i₁ i₂ i₃ : ι) :
+    CommSq (f i₁).op.toLoc (f i₂).op.toLoc
+      (sq₃ i₁ i₂ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc := by
+  constructor
+  change ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc = ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc
+  rw [(sq₃ i₁ i₂ i₃).w₁, (sq₃ i₁ i₂ i₃).w₂]
+
+/-- Similarly for `(sq₃.p₂, sq₃.p₃)`. -/
+def pbCommSq₃' (i₁ i₂ i₃ : ι) :
+    CommSq (f i₂).op.toLoc (f i₃).op.toLoc
+      (sq₃ i₁ i₂ i₃).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc := by
+  constructor
+  change ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc = ((sq₃ i₁ i₂ i₃).p₃ ≫ f i₃).op.toLoc
+  rw [(sq₃ i₁ i₂ i₃).w₂, (sq₃ i₁ i₂ i₃).w₃]
+
+/-- And for `(sq₃.p₁, sq₃.p₃)`. -/
+def pbCommSq₃'' (i₁ i₂ i₃ : ι) :
+    CommSq (f i₁).op.toLoc (f i₃).op.toLoc
+      (sq₃ i₁ i₂ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc := by
+  constructor
+  change ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc = ((sq₃ i₁ i₂ i₃).p₃ ≫ f i₃).op.toLoc
+  rw [(sq₃ i₁ i₂ i₃).w₁, (sq₃ i₁ i₂ i₃).w₃]
+
+set_option backward.isDefEq.respectTransparency false in
+variable (F) in
+/-- **Key helper**: pulling back `isoMapOfCommSq` along a morphism gives another
+`isoMapOfCommSq` for the pulled-back square.
+
+For the pullback square `(sq i₁ i₂)` with projections `p₁, p₂` and
+the threefold pullback morphism `p₁₂ : P₁₂₃ → P₁₂`, the composition
+```
+mc'(sq.p₁, p₁₂, sq₃.p₁).hom ≫ p₁₂*(iso₁₂.hom.app(M)) ≫ mc'(sq.p₂, p₁₂, sq₃.p₂).inv
+```
+(which is `pullHom(iso₁₂.hom.app(M))(p₁₂)`) equals `isoMapOfCommSq(pbCommSq₃).hom.app(M)`.
+
+The proof follows the same fusion pattern as `pullHom_pullHom'`. -/
+lemma pullHom_isoMapOfCommSq (i₁ i₂ i₃ : ι)
+    (M : (F.obj (.mk (Opposite.op S))).obj) :
+    LocallyDiscreteOpToCat.pullHom
+      (((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i₁ i₂)).hom.toNatTrans.app M)
+      (sq₃ i₁ i₂ i₃).p₁₂ (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₂ =
+    ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq₃ sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M := by
+  -- Expand both sides via isoMapOfCommSq_eq
+  rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq sq i₁ i₂)
+    ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]),
+    (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃ sq sq₃ i₁ i₂ i₃)
+    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])]
+  simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app]
+  -- Unfold pullHom, distribute
+  dsimp only [LocallyDiscreteOpToCat.pullHom]
+  simp only [Functor.map_comp, Category.assoc]
+  -- Use mapComp'₀₁₃_inv_app telescope for left pair:
+  -- mc'(sq.p₁, p₁₂, sq₃.p₁).hom ≫ p₁₂*(mc'(fi₁, sq.p₁, c).inv) =
+  --   mc'(fi₁, sq₃.p₁, c').inv ≫ mc'(c, p₁₂, c').hom
+  -- (from: mc'(fi₁, sq₃.p₁, c').inv =
+  --   mc'(sq.p₁, p₁₂, sq₃.p₁).hom ≫ p₁₂*(mc'(fi₁, sq.p₁, c).inv) ≫ mc'(c, p₁₂, c').inv)
+  have exp₁ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
+    (f i₁).op.toLoc (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc
+    ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
+    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]) M
+  -- Use mapComp'₀₂₃_hom_app for right pair (dual telescope):
+  -- p₁₂*(mc'(fi₂, sq.p₂, c).hom) ≫ mc'(sq.p₂, p₁₂, sq₃.p₂).inv =
+  --   mc'(c, p₁₂, c').inv ≫ mc'(fi₂, sq₃.p₂, c').hom
+  have exp₂ := (F.comp Adj.forget₁).mapComp'₀₂₃_inv_app
+    (f i₂).op.toLoc (sq i₁ i₂).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc
+    ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
+    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i₁ i₂).condition.symm])
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₂])
+    (by simp [← Quiver.Hom.comp_toLoc, ← op_comp])
+    M
+  -- Now use exp₁ and exp₂ to transform the RHS into the LHS.
+  -- exp₁: mc'(fi₁, sq₃.p₁, c').inv = [terms 1-2] ≫ mc'(c, p₁₂, c').inv
+  -- exp₂: mc'(c, p₁₂, c').inv = [terms 3-4] ≫ mc'(fi₂, sq₃.p₂, c').inv
+  -- So RHS = exp₁ ≫ mc'(fi₂, sq₃.p₂, c').hom
+  --        = [terms 1-2] ≫ exp₂ ≫ mc'(fi₂, sq₃.p₂, c').hom
+  --        = [terms 1-2] ≫ [terms 3-4] ≫ (mc'.inv ≫ mc'.hom = 𝟙) = LHS
+  conv_rhs => rw [exp₁]
+  simp only [Category.assoc]
+  conv_rhs => rw [exp₂]
+  simp only [Category.assoc]
+  -- Cancel mc'(fi₂, sq₃.p₂, c').inv ≫ mc'(fi₂, sq₃.p₂, c').hom = 𝟙
+  set_option backward.isDefEq.respectTransparency false in
+  erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
+    ((F.comp Adj.forget₁).mapComp' (f i₂).op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
+      ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
+      (by simp [← Quiver.Hom.comp_toLoc, ← op_comp])))]
+  erw [Category.comp_id]
+
 set_option backward.isDefEq.respectTransparency false in
 variable (F) in
 /-- **Threefold cocycle** [Kahn, Proposition 3.3]. The forward-constructed descent datum
