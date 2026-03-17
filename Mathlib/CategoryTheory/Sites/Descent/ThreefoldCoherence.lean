@@ -247,6 +247,50 @@ lemma pullHom_isoMapOfCommSq'' (i₁ i₂ i₃ : ι)
 
 set_option backward.isDefEq.respectTransparency false in
 variable (F) in
+/-- **Composition of threefold isoMapOfCommSq**: the coherence isos for `(i₁,i₂)` and
+`(i₂,i₃)` pulled back to the threefold pullback compose to give the iso for `(i₁,i₃)`.
+
+All three expand via `isoMapOfCommSq_eq` with common path `sq₃.p`, and the
+middle `mapComp'(fi₂, sq₃.p₂).hom ≫ mapComp'(fi₂, sq₃.p₂).inv = 𝟙` cancels. -/
+lemma isoMapOfCommSq₃_comp (i₁ i₂ i₃ : ι)
+    (M : (F.obj (.mk (Opposite.op S))).obj) :
+    ((F.comp Adj.forget₁).isoMapOfCommSq
+      (pbCommSq₃ sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M ≫
+    ((F.comp Adj.forget₁).isoMapOfCommSq
+      (pbCommSq₃' sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M =
+    ((F.comp Adj.forget₁).isoMapOfCommSq
+      (pbCommSq₃'' sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M := by
+  -- Use the SAME common path φ = (sq₃.p₁ ≫ fi₁).op.toLoc for all three expansions.
+  -- For pbCommSq₃' we need (sq₃.p₂ ≫ fi₂) = (sq₃.p₁ ≫ fi₁) (both = sq₃.p).
+  have hw₁₂ : (sq₃ i₁ i₂ i₃).p₂ ≫ f i₂ = (sq₃ i₁ i₂ i₃).p₁ ≫ f i₁ :=
+    (sq₃ i₁ i₂ i₃).w₂.trans (sq₃ i₁ i₂ i₃).w₁.symm
+  rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃ sq sq₃ i₁ i₂ i₃)
+    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]),
+    (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃' sq sq₃ i₁ i₂ i₃)
+    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, hw₁₂]),
+    (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃'' sq sq₃ i₁ i₂ i₃)
+    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])]
+  simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app, Category.assoc]
+  -- Now the middle pair uses the SAME mapComp': hom ≫ inv = 𝟙
+  -- Use slice_rhs or direct reassoc to cancel the middle pair
+  conv_lhs =>
+    rw [← Category.assoc
+      (f := ((F.comp Adj.forget₁).mapComp' (f i₂).op.toLoc
+        (sq₃ i₁ i₂ i₃).p₂.op.toLoc
+        ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc _).hom.toNatTrans.app M)]
+  set_option backward.isDefEq.respectTransparency false in
+  erw [Iso.hom_inv_id_app (Cat.Hom.toNatIso
+    ((F.comp Adj.forget₁).mapComp' (f i₂).op.toLoc
+      (sq₃ i₁ i₂ i₃).p₂.op.toLoc
+      ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
+      (by simp [← Quiver.Hom.comp_toLoc, ← op_comp, hw₁₂])))]
+  erw [Category.id_comp]
+
+set_option backward.isDefEq.respectTransparency false in
+variable (F) in
 /-- **Threefold cocycle at pullHom level** [Kahn, Proposition 3.3].
 Pulling back `forwardHom(i₁,i₂)` and `forwardHom(i₂,i₃)` to the threefold pullback
 via `pullHom` and composing gives `forwardHom(i₁,i₃)` pulled back.
