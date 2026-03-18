@@ -49,6 +49,22 @@ lemma comp_op_toLoc {A B D : C} (g : A ⟶ B) (h : B ⟶ D) :
 
 end LocallyDiscreteOpToCat
 
+namespace Cat.Hom
+
+/-- In `Cat`, mapping through a composite morphism equals composing the individual maps.
+This is definitionally true (`rfl`) but needed as a named lemma because `rw` and `simp`
+cannot see through the definitional equality. -/
+@[simp]
+lemma comp_toFunctor_map {X Y Z : Cat} (f : X ⟶ Y) (g : Y ⟶ Z) {A B : ↑X} (a : A ⟶ B) :
+    (f ≫ g).toFunctor.map a = g.toFunctor.map (f.toFunctor.map a) := rfl
+
+/-- In `Cat`, applying a composite morphism to an object equals composing the applications. -/
+@[simp]
+lemma comp_toFunctor_obj {X Y Z : Cat} (f : X ⟶ Y) (g : Y ⟶ Z) (A : ↑X) :
+    (f ≫ g).toFunctor.obj A = g.toFunctor.obj (f.toFunctor.obj A) := rfl
+
+end Cat.Hom
+
 open LocallyDiscreteOpToCat
 
 namespace Pseudofunctor
