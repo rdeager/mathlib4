@@ -94,6 +94,59 @@ def pbCommSq₃'' (i₁ i₂ i₃ : ι) :
 
 set_option backward.isDefEq.respectTransparency false in
 variable (F) in
+/-- Pulling back `isoMapOfCommSq` along a morphism that factors through the pullback
+gives the `isoMapOfCommSq` for the pulled-back CommSq.
+
+Given a `ChosenPullback (f j₁) (f j₂)` with projections `p₁, p₂` and a morphism
+`p : T ⟶ pullback` with `p ≫ p₁ = q₁` and `p ≫ p₂ = q₂`, the `pullHom` of
+`isoMapOfCommSq(pbCommSq)` along `p` equals `isoMapOfCommSq` for the CommSq
+formed by `(q₁, q₂)`.
+
+The three specific lemmas `pullHom_isoMapOfCommSq{,'',''}` are instances of this
+for the threefold pullback projections `p₁₂, p₂₃, p₁₃`. -/
+lemma pullHom_isoMapOfCommSq_of_factorization
+    {j₁ j₂ : ι} {T : C}
+    (p : T ⟶ (sq j₁ j₂).pullback) (q₁ : T ⟶ X j₁) (q₂ : T ⟶ X j₂)
+    (hp₁ : p ≫ (sq j₁ j₂).p₁ = q₁) (hp₂ : p ≫ (sq j₁ j₂).p₂ = q₂)
+    (csq : CommSq (f j₁).op.toLoc (f j₂).op.toLoc q₁.op.toLoc q₂.op.toLoc)
+    (M : (F.obj (.mk (Opposite.op S))).obj) :
+    LocallyDiscreteOpToCat.pullHom
+      (((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq j₁ j₂)).hom.toNatTrans.app M)
+      p q₁ q₂ =
+    ((F.comp Adj.forget₁).isoMapOfCommSq csq).hom.toNatTrans.app M := by
+  have hw : q₁ ≫ f j₁ = q₂ ≫ f j₂ := by
+    rw [← hp₁, ← hp₂, Category.assoc, Category.assoc, (sq j₁ j₂).condition]
+  rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq sq j₁ j₂)
+    ((sq j₁ j₂).p₁ ≫ f j₁).op.toLoc (comp_op_toLoc _ _),
+    (F.comp Adj.forget₁).isoMapOfCommSq_eq csq
+    (q₁ ≫ f j₁).op.toLoc (comp_op_toLoc _ _)]
+  simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app]
+  dsimp only [LocallyDiscreteOpToCat.pullHom]
+  simp only [Functor.map_comp, Category.assoc]
+  have exp₁ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
+    (f j₁).op.toLoc (sq j₁ j₂).p₁.op.toLoc p.op.toLoc
+    ((sq j₁ j₂).p₁ ≫ f j₁).op.toLoc q₁.op.toLoc
+    (q₁ ≫ f j₁).op.toLoc
+    (comp_op_toLoc _ _)
+    (by rw [comp_op_toLoc, hp₁])
+    (comp_op_toLoc _ _) M
+  have exp₂ := (F.comp Adj.forget₁).mapComp'₀₂₃_inv_app
+    (f j₂).op.toLoc (sq j₁ j₂).p₂.op.toLoc p.op.toLoc
+    ((sq j₁ j₂).p₁ ≫ f j₁).op.toLoc q₂.op.toLoc
+    (q₁ ≫ f j₁).op.toLoc
+    (by rw [comp_op_toLoc, (sq j₁ j₂).condition.symm])
+    (by rw [comp_op_toLoc, hp₂])
+    (by rw [comp_op_toLoc, hw.symm])
+    M
+  conv_rhs => rw [exp₁]
+  simp only [Category.assoc]
+  conv_rhs => rw [exp₂]
+  simp only [Category.assoc]
+  simp only [Cat.Hom.inv_hom_id_toNatTrans_app]
+  erw [Category.comp_id]
+
+set_option backward.isDefEq.respectTransparency false in
+variable (F) in
 /-- **Key helper**: pulling back `isoMapOfCommSq` along a morphism gives another
 `isoMapOfCommSq` for the pulled-back square.
 

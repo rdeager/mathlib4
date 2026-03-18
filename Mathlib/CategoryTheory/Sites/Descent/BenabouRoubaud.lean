@@ -79,7 +79,7 @@ universe t v' v u' u
 
 namespace CategoryTheory
 
-open Bicategory Opposite Limits
+open Bicategory Opposite Limits LocallyDiscreteOpToCat
 
 namespace Pseudofunctor
 
