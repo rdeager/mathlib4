@@ -154,7 +154,6 @@ lemma pullHom_isoMapOfCommSq (i₁ i₂ i₃ : ι)
   conv_rhs => rw [exp₂]
   simp only [Category.assoc]
   -- Cancel mc'(fi₂, sq₃.p₂, c').inv ≫ mc'(fi₂, sq₃.p₂, c').hom = 𝟙
-  set_option backward.isDefEq.respectTransparency false in
   erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
     ((F.comp Adj.forget₁).mapComp' (f i₂).op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
       ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
@@ -196,7 +195,6 @@ lemma pullHom_isoMapOfCommSq' (i₁ i₂ i₃ : ι)
   simp only [Category.assoc]
   conv_rhs => rw [exp₂]
   simp only [Category.assoc]
-  set_option backward.isDefEq.respectTransparency false in
   erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
     ((F.comp Adj.forget₁).mapComp' (f i₃).op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc
       ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc
@@ -238,7 +236,6 @@ lemma pullHom_isoMapOfCommSq'' (i₁ i₂ i₃ : ι)
   simp only [Category.assoc]
   conv_rhs => rw [exp₂]
   simp only [Category.assoc]
-  set_option backward.isDefEq.respectTransparency false in
   erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
     ((F.comp Adj.forget₁).mapComp' (f i₃).op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc
       ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
@@ -281,7 +278,6 @@ lemma isoMapOfCommSq₃_comp (i₁ i₂ i₃ : ι)
       (f := ((F.comp Adj.forget₁).mapComp' (f i₂).op.toLoc
         (sq₃ i₁ i₂ i₃).p₂.op.toLoc
         ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc _).hom.toNatTrans.app M)]
-  set_option backward.isDefEq.respectTransparency false in
   erw [Iso.hom_inv_id_app (Cat.Hom.toNatIso
     ((F.comp Adj.forget₁).mapComp' (f i₂).op.toLoc
       (sq₃ i₁ i₂ i₃).p₂.op.toLoc
@@ -310,17 +306,14 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
   dsimp only [forwardHom]
   simp only [Functor.map_comp, Category.assoc]
   -- Push D.hom₁₂ out of block 1 past mc'₁
-  set_option backward.isDefEq.respectTransparency false in
   conv_lhs =>
     rw [← Category.assoc, ← (F.comp Adj.forget₁).mapComp'_hom_naturality
       (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
       (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₁]) (D.hom i₁ i₂)]
   simp only [Category.assoc]
   -- Push all ε past mc'_inv
-  set_option backward.isDefEq.respectTransparency false in
   simp only [mapComp'_inv_naturality]
   -- Push D.hom₂₃ past mc'₃ on LHS
-  set_option backward.isDefEq.respectTransparency false in
   conv_lhs =>
     rw [← Category.assoc
       (f := ((F.comp Adj.forget₁).mapComp' (sq i₂ i₃).p₁.op.toLoc
@@ -330,14 +323,12 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
         (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₂₃_p₂]) (D.hom i₂ i₃)]
   simp only [Category.assoc]
   -- Push D.hom₁₃ past mc'₅ on RHS
-  set_option backward.isDefEq.respectTransparency false in
   conv_rhs =>
     rw [← Category.assoc, ← (F.comp Adj.forget₁).mapComp'_hom_naturality
       (sq i₁ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₃.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
       (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₃_p₁]) (D.hom i₁ i₃)]
   simp only [Category.assoc]
   -- Push D.hom₂₃ back through mc'₂.inv on LHS (reverse naturality)
-  set_option backward.isDefEq.respectTransparency false in
   rw [← (F.comp Adj.forget₁).mapComp'_inv_naturality_assoc
     (sq i₁ i₂).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
     (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₂]) (D.hom i₂ i₃)]
@@ -370,7 +361,6 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
         ((F.map (f i₂).op.toLoc).l.toFunctor.map
           ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃))))]
   -- Apply iso₁₂ naturality at r₂(D.hom₂₃)
-  set_option backward.isDefEq.respectTransparency false in
   erw [← ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i₁ i₂)).hom.toNatTrans.naturality
     ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃))]
   -- Convert Cat composition form to explicit functor application
@@ -387,7 +377,6 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
     (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
     (a := ((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
       ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃)))
-  set_option backward.isDefEq.respectTransparency false in
   erw [show ((F.comp Adj.forget₁).mapComp' (sq i₁ i₂).p₁.op.toLoc
     (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc _).hom.toNatTrans.app
     ((F.map (f i₁).op.toLoc).l.toFunctor.obj
@@ -396,14 +385,12 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
       (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc _).hom.toNatTrans.app
     (((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.obj
       ((F.map (f i₂).op.toLoc).r.toFunctor.obj (D.obj i₂))) from rfl]
-  set_option backward.isDefEq.respectTransparency false in
   rw [← Category.assoc (f := ((F.comp Adj.forget₁).mapComp' (sq i₁ i₂).p₁.op.toLoc
     (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc _).hom.toNatTrans.app _),
     ← key₁]
   simp only [Category.assoc]
   -- Apply D.coassoc: D.hom₁₂ ≫ l₁(r₂(D.hom₂₃)) = D.hom₁₃ ≫ l₁(η₂)
   rw [← Functor.map_comp_assoc]
-  set_option backward.isDefEq.respectTransparency false in
   erw [D.coassoc i₁ i₂ i₃]
   simp only [Functor.map_comp, Category.assoc]
   -- Strip common prefix p₁*(D.hom₁₃)
@@ -415,7 +402,6 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
     (a := ((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
       ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
         ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃))))
-  set_option backward.isDefEq.respectTransparency false in
   erw [show ((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁.op.toLoc).toFunctor.map
     ((F.map (f i₁).op.toLoc).l.toFunctor.map
       ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
@@ -424,7 +410,6 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
       (((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
         ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
           ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))) from rfl]
-  set_option backward.isDefEq.respectTransparency false in
   erw [← Category.assoc
     (f := ((F.comp Adj.forget₁).map (sq₃ i₁ i₂ i₃).p₁.op.toLoc).toFunctor.map _),
     key₂]
@@ -442,7 +427,6 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
           ((F.map (f i₂).op.toLoc).l.toFunctor.obj
             ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))))]
   -- Step 19: Apply iso₁₂ naturality at η₂ (forward direction)
-  set_option backward.isDefEq.respectTransparency false in
   erw [((F.comp Adj.forget₁).isoMapOfCommSq
     (pbCommSq sq i₁ i₂)).hom.toNatTrans.naturality
     ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
@@ -471,7 +455,6 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
             ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃))))),
       ← Functor.map_comp
         (((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor)]
-  set_option backward.isDefEq.respectTransparency false in
   erw [Adj.left_triangle_components (F.map (f i₂).op.toLoc)]
   erw [Functor.map_id, Functor.map_id]
   simp only [Category.id_comp]

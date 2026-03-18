@@ -21,7 +21,6 @@ direction of Bénabou–Roubaud) and the counit condition (backward direction).
 ## Main results
 
 * `pbCommSq`: the pullback condition as a `CommSq` in `LocallyDiscrete Cᵒᵖ`
-* `composedPath_eq`: both composed paths through the diagonal square are equal
 * `pullHom_isoMapOfCommSq_diagonal`: the diagonal pullback of `isoMapOfCommSq` is `𝟙`
 
 ## References
@@ -48,7 +47,6 @@ section DiagonalCoherence
 
 variable {ι : Type t} {S : C} {X : ι → C} {f : ∀ i, X i ⟶ S}
   (sq : ∀ i j, ChosenPullback (f i) (f j))
-  (sq₃ : ∀ (i₁ i₂ i₃ : ι), ChosenPullback₃ (sq i₁ i₂) (sq i₂ i₃) (sq i₁ i₃))
 
 /-! ### Pullback commutative squares
 
@@ -62,17 +60,6 @@ def pbCommSq (i₁ i₂ : ι) : CommSq (f i₁).op.toLoc (f i₂).op.toLoc
   constructor
   change ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc = ((sq i₁ i₂).p₂ ≫ f i₂).op.toLoc
   rw [(sq i₁ i₂).condition]
-
-/-- The composed path through the pullback square, used as the common intermediate
-for the isoMapOfCommSq decomposition. For the diagonal (i₁ = i₂ = i),
-both paths `p₁ ≫ f i` and `p₂ ≫ f i` give this same morphism. -/
-noncomputable abbrev composedPathOp (i₁ i₂ : ι) :=
-  ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc
-
-/-- For the diagonal pullback, both composed paths are equal. -/
-lemma composedPath_eq (i : ι) :
-    ((sq i i).p₁ ≫ f i).op.toLoc = ((sq i i).p₂ ≫ f i).op.toLoc := by
-  congr 1; exact congrArg _ (sq i i).condition
 
 set_option backward.isDefEq.respectTransparency false in
 /-- **Core diagonal coherence lemma.** When the pullback square is the diagonal
@@ -117,7 +104,6 @@ lemma pullHom_isoMapOfCommSq_diagonal
     rw [← Category.assoc, ← Category.assoc]
     rw [Category.assoc (f := ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
       (𝟙 (X i)).op.toLoc _).hom.toNatTrans.app _)]
-  set_option backward.isDefEq.respectTransparency false in
   rw [show ((F.comp Adj.forget₁).map p.op.toLoc).toFunctor.map
         (((F.comp Adj.forget₁).mapComp' (f i).op.toLoc (sq i i).p₁.op.toLoc
           ((sq i i).p₁ ≫ f i).op.toLoc _).inv.toNatTrans.app
@@ -138,10 +124,8 @@ lemma pullHom_isoMapOfCommSq_diagonal
     (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).inv.toNatTrans.app _),
     ← cancel_mono (((F.comp Adj.forget₁).mapComp' (sq i i).p₂.op.toLoc p.op.toLoc
     (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])).hom.toNatTrans.app _)]
-  simp only [Category.assoc, ← reassoc_of% Cat.Hom₂.comp_app, Cat.Hom₂.comp_app,
-    Iso.inv_hom_id, Cat.Hom₂.id_app, Category.id_comp, Category.comp_id,
-    Iso.hom_inv_id]
-  set_option backward.isDefEq.respectTransparency false in
+  simp only [Category.assoc, ← reassoc_of% Cat.Hom₂.comp_app,
+    Iso.inv_hom_id, Cat.Hom₂.id_app, Category.id_comp, Category.comp_id]
   erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
     ((F.comp Adj.forget₁).mapComp' (sq i i).p₂.op.toLoc p.op.toLoc (𝟙 (X i)).op.toLoc
       (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])))]
@@ -168,7 +152,6 @@ lemma pullHom_isoMapOfCommSq_diagonal
             Category.id_comp])).hom.toNatTrans.app
     ((F.map (f i).op.toLoc).r.toFunctor.obj M)) h_eq
   simp only [Category.assoc] at h_cleaned
-  set_option backward.isDefEq.respectTransparency false in
   erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso ((F.comp Adj.forget₁).mapComp'
     ((sq i i).p₁ ≫ f i).op.toLoc p.op.toLoc (f i).op.toLoc
     (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, ← Category.assoc, h₁,
@@ -181,7 +164,6 @@ lemma pullHom_isoMapOfCommSq_diagonal
   simp only [← Category.assoc]
   rw [h_cleaned]
   simp only [Category.assoc, ← Functor.map_comp]
-  set_option backward.isDefEq.respectTransparency false in
   erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso ((F.comp Adj.forget₁).mapComp'
     (f i).op.toLoc (sq i i).p₂.op.toLoc ((sq i i).p₁ ≫ f i).op.toLoc
     (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i i).condition.symm])))]
@@ -194,8 +176,8 @@ lemma pullHom_isoMapOfCommSq_diagonal
         (𝟙 (X i)).op.toLoc _).inv.toNatTrans.app
         (((F.comp Adj.forget₁).map (f i).op.toLoc).toFunctor.obj
           ((F.map (f i).op.toLoc).r.toFunctor.obj M)) from rfl]
-  simp only [Category.assoc, ← reassoc_of% Cat.Hom₂.comp_app, Cat.Hom₂.comp_app,
-    Iso.hom_inv_id, Cat.Hom₂.id_app, Category.id_comp]
+  simp only [← reassoc_of% Cat.Hom₂.comp_app, Iso.hom_inv_id, Cat.Hom₂.id_app,
+    Category.id_comp]
 
 end DiagonalCoherence
 
