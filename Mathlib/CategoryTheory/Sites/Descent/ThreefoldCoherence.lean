@@ -35,7 +35,7 @@ universe t v' v u' u
 
 namespace CategoryTheory
 
-open Bicategory Opposite Limits
+open Bicategory Opposite Limits LocallyDiscreteOpToCat
 
 namespace Pseudofunctor
 
@@ -136,7 +136,7 @@ lemma pullHom_isoMapOfCommSq_of_factorization
     (q₁ ≫ f j₁).op.toLoc
     (by rw [comp_op_toLoc, (sq j₁ j₂).condition.symm])
     (by rw [comp_op_toLoc, hp₂])
-    (by rw [comp_op_toLoc, hw.symm])
+    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, ← Category.assoc, hp₁])
     M
   conv_rhs => rw [exp₁]
   simp only [Category.assoc]
@@ -145,146 +145,41 @@ lemma pullHom_isoMapOfCommSq_of_factorization
   simp only [Cat.Hom.inv_hom_id_toNatTrans_app]
   erw [Category.comp_id]
 
-set_option backward.isDefEq.respectTransparency false in
 variable (F) in
-/-- **Key helper**: pulling back `isoMapOfCommSq` along a morphism gives another
-`isoMapOfCommSq` for the pulled-back square.
-
-For the pullback square `(sq i₁ i₂)` with projections `p₁, p₂` and
-the threefold pullback morphism `p₁₂ : P₁₂₃ → P₁₂`, the composition
-```
-mc'(sq.p₁, p₁₂, sq₃.p₁).hom ≫ p₁₂*(iso₁₂.hom.app(M)) ≫ mc'(sq.p₂, p₁₂, sq₃.p₂).inv
-```
-(which is `pullHom(iso₁₂.hom.app(M))(p₁₂)`) equals `isoMapOfCommSq(pbCommSq₃).hom.app(M)`.
-
-The proof follows the same fusion pattern as `pullHom_pullHom'`. -/
+/-- Instance of `pullHom_isoMapOfCommSq_of_factorization` for `(i₁, i₂)` via `p₁₂`. -/
 lemma pullHom_isoMapOfCommSq (i₁ i₂ i₃ : ι)
     (M : (F.obj (.mk (Opposite.op S))).obj) :
     LocallyDiscreteOpToCat.pullHom
       (((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i₁ i₂)).hom.toNatTrans.app M)
       (sq₃ i₁ i₂ i₃).p₁₂ (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₂ =
-    ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq₃ sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M := by
-  -- Expand both sides via isoMapOfCommSq_eq
-  rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq sq i₁ i₂)
-    ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc (comp_op_toLoc _ _),
-    (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃ sq sq₃ i₁ i₂ i₃)
-    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc (comp_op_toLoc _ _)]
-  simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app]
-  -- Unfold pullHom, distribute
-  dsimp only [LocallyDiscreteOpToCat.pullHom]
-  simp only [Functor.map_comp, Category.assoc]
-  -- Use mapComp'₀₁₃_inv_app telescope for left pair:
-  -- mc'(sq.p₁, p₁₂, sq₃.p₁).hom ≫ p₁₂*(mc'(fi₁, sq.p₁, c).inv) =
-  --   mc'(fi₁, sq₃.p₁, c').inv ≫ mc'(c, p₁₂, c').hom
-  -- (from: mc'(fi₁, sq₃.p₁, c').inv =
-  --   mc'(sq.p₁, p₁₂, sq₃.p₁).hom ≫ p₁₂*(mc'(fi₁, sq.p₁, c).inv) ≫ mc'(c, p₁₂, c').inv)
-  have exp₁ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
-    (f i₁).op.toLoc (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc
-    ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
-    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-    (comp_op_toLoc _ _)
-    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
-    (comp_op_toLoc _ _) M
-  -- Use mapComp'₀₂₃_hom_app for right pair (dual telescope):
-  -- p₁₂*(mc'(fi₂, sq.p₂, c).hom) ≫ mc'(sq.p₂, p₁₂, sq₃.p₂).inv =
-  --   mc'(c, p₁₂, c').inv ≫ mc'(fi₂, sq₃.p₂, c').hom
-  have exp₂ := (F.comp Adj.forget₁).mapComp'₀₂₃_inv_app
-    (f i₂).op.toLoc (sq i₁ i₂).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc
-    ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
-    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-    (by rw [comp_op_toLoc, (sq i₁ i₂).condition.symm])
-    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₂_p₂])
-    (by simp [comp_op_toLoc])
-    M
-  -- Now use exp₁ and exp₂ to transform the RHS into the LHS.
-  -- exp₁: mc'(fi₁, sq₃.p₁, c').inv = [terms 1-2] ≫ mc'(c, p₁₂, c').inv
-  -- exp₂: mc'(c, p₁₂, c').inv = [terms 3-4] ≫ mc'(fi₂, sq₃.p₂, c').inv
-  -- So RHS = exp₁ ≫ mc'(fi₂, sq₃.p₂, c').hom
-  --        = [terms 1-2] ≫ exp₂ ≫ mc'(fi₂, sq₃.p₂, c').hom
-  --        = [terms 1-2] ≫ [terms 3-4] ≫ (mc'.inv ≫ mc'.hom = 𝟙) = LHS
-  conv_rhs => rw [exp₁]
-  simp only [Category.assoc]
-  conv_rhs => rw [exp₂]
-  simp only [Category.assoc]
-  -- Cancel mc'(fi₂, sq₃.p₂, c').inv ≫ mc'(fi₂, sq₃.p₂, c').hom = 𝟙
-  simp only [Cat.Hom.inv_hom_id_toNatTrans_app]
-  erw [Category.comp_id]
+    ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq₃ sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M :=
+  pullHom_isoMapOfCommSq_of_factorization F sq
+    (sq₃ i₁ i₂ i₃).p₁₂ (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₂
+    (sq₃ i₁ i₂ i₃).p₁₂_p₁ (sq₃ i₁ i₂ i₃).p₁₂_p₂ (pbCommSq₃ sq sq₃ i₁ i₂ i₃) M
 
-set_option backward.isDefEq.respectTransparency false in
 variable (F) in
-/-- Variant of `pullHom_isoMapOfCommSq` for the `(i₂, i₃)` square pulled back along `p₂₃`. -/
+/-- Instance of `pullHom_isoMapOfCommSq_of_factorization` for `(i₂, i₃)` via `p₂₃`. -/
 lemma pullHom_isoMapOfCommSq' (i₁ i₂ i₃ : ι)
     (M : (F.obj (.mk (Opposite.op S))).obj) :
     LocallyDiscreteOpToCat.pullHom
       (((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i₂ i₃)).hom.toNatTrans.app M)
       (sq₃ i₁ i₂ i₃).p₂₃ (sq₃ i₁ i₂ i₃).p₂ (sq₃ i₁ i₂ i₃).p₃ =
-    ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq₃' sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M := by
-  rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq sq i₂ i₃)
-    ((sq i₂ i₃).p₁ ≫ f i₂).op.toLoc (comp_op_toLoc _ _),
-    (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃' sq sq₃ i₁ i₂ i₃)
-    ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc (comp_op_toLoc _ _)]
-  simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app]
-  dsimp only [LocallyDiscreteOpToCat.pullHom]
-  simp only [Functor.map_comp, Category.assoc]
-  have exp₁ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
-    (f i₂).op.toLoc (sq i₂ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₂₃.op.toLoc
-    ((sq i₂ i₃).p₁ ≫ f i₂).op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
-    ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc
-    (comp_op_toLoc _ _)
-    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₂₃_p₂])
-    (comp_op_toLoc _ _) M
-  have exp₂ := (F.comp Adj.forget₁).mapComp'₀₂₃_inv_app
-    (f i₃).op.toLoc (sq i₂ i₃).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₂₃.op.toLoc
-    ((sq i₂ i₃).p₁ ≫ f i₂).op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc
-    ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc
-    (by rw [comp_op_toLoc, (sq i₂ i₃).condition.symm])
-    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₂₃_p₃])
-    (by simp [comp_op_toLoc])
-    M
-  conv_rhs => rw [exp₁]
-  simp only [Category.assoc]
-  conv_rhs => rw [exp₂]
-  simp only [Category.assoc]
-  simp only [Cat.Hom.inv_hom_id_toNatTrans_app]
-  erw [Category.comp_id]
+    ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq₃' sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M :=
+  pullHom_isoMapOfCommSq_of_factorization F sq
+    (sq₃ i₁ i₂ i₃).p₂₃ (sq₃ i₁ i₂ i₃).p₂ (sq₃ i₁ i₂ i₃).p₃
+    (sq₃ i₁ i₂ i₃).p₂₃_p₂ (sq₃ i₁ i₂ i₃).p₂₃_p₃ (pbCommSq₃' sq sq₃ i₁ i₂ i₃) M
 
-set_option backward.isDefEq.respectTransparency false in
 variable (F) in
-/-- Variant of `pullHom_isoMapOfCommSq` for the `(i₁, i₃)` square pulled back along `p₁₃`. -/
+/-- Instance of `pullHom_isoMapOfCommSq_of_factorization` for `(i₁, i₃)` via `p₁₃`. -/
 lemma pullHom_isoMapOfCommSq'' (i₁ i₂ i₃ : ι)
     (M : (F.obj (.mk (Opposite.op S))).obj) :
     LocallyDiscreteOpToCat.pullHom
       (((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i₁ i₃)).hom.toNatTrans.app M)
       (sq₃ i₁ i₂ i₃).p₁₃ (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₃ =
-    ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq₃'' sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M := by
-  rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq sq i₁ i₃)
-    ((sq i₁ i₃).p₁ ≫ f i₁).op.toLoc (comp_op_toLoc _ _),
-    (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃'' sq sq₃ i₁ i₂ i₃)
-    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc (comp_op_toLoc _ _)]
-  simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app]
-  dsimp only [LocallyDiscreteOpToCat.pullHom]
-  simp only [Functor.map_comp, Category.assoc]
-  have exp₁ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
-    (f i₁).op.toLoc (sq i₁ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₃.op.toLoc
-    ((sq i₁ i₃).p₁ ≫ f i₁).op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
-    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-    (comp_op_toLoc _ _)
-    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₃_p₁])
-    (comp_op_toLoc _ _) M
-  have exp₂ := (F.comp Adj.forget₁).mapComp'₀₂₃_inv_app
-    (f i₃).op.toLoc (sq i₁ i₃).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁₃.op.toLoc
-    ((sq i₁ i₃).p₁ ≫ f i₁).op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc
-    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-    (by rw [comp_op_toLoc, (sq i₁ i₃).condition.symm])
-    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₃_p₃])
-    (by simp [comp_op_toLoc])
-    M
-  conv_rhs => rw [exp₁]
-  simp only [Category.assoc]
-  conv_rhs => rw [exp₂]
-  simp only [Category.assoc]
-  simp only [Cat.Hom.inv_hom_id_toNatTrans_app]
-  erw [Category.comp_id]
+    ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq₃'' sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M :=
+  pullHom_isoMapOfCommSq_of_factorization F sq
+    (sq₃ i₁ i₂ i₃).p₁₃ (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₃
+    (sq₃ i₁ i₂ i₃).p₁₃_p₁ (sq₃ i₁ i₂ i₃).p₁₃_p₃ (pbCommSq₃'' sq sq₃ i₁ i₂ i₃) M
 
 set_option backward.isDefEq.respectTransparency false in
 variable (F) in
