@@ -154,10 +154,7 @@ lemma pullHom_isoMapOfCommSq (i₁ i₂ i₃ : ι)
   conv_rhs => rw [exp₂]
   simp only [Category.assoc]
   -- Cancel mc'(fi₂, sq₃.p₂, c').inv ≫ mc'(fi₂, sq₃.p₂, c').hom = 𝟙
-  erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
-    ((F.comp Adj.forget₁).mapComp' (f i₂).op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
-      ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-      (by simp [← Quiver.Hom.comp_toLoc, ← op_comp])))]
+  simp only [Cat.Hom.inv_hom_id_toNatTrans_app]
   erw [Category.comp_id]
 
 set_option backward.isDefEq.respectTransparency false in
@@ -195,10 +192,7 @@ lemma pullHom_isoMapOfCommSq' (i₁ i₂ i₃ : ι)
   simp only [Category.assoc]
   conv_rhs => rw [exp₂]
   simp only [Category.assoc]
-  erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
-    ((F.comp Adj.forget₁).mapComp' (f i₃).op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc
-      ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc
-      (by simp [← Quiver.Hom.comp_toLoc, ← op_comp])))]
+  simp only [Cat.Hom.inv_hom_id_toNatTrans_app]
   erw [Category.comp_id]
 
 set_option backward.isDefEq.respectTransparency false in
@@ -236,10 +230,7 @@ lemma pullHom_isoMapOfCommSq'' (i₁ i₂ i₃ : ι)
   simp only [Category.assoc]
   conv_rhs => rw [exp₂]
   simp only [Category.assoc]
-  erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
-    ((F.comp Adj.forget₁).mapComp' (f i₃).op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc
-      ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-      (by simp [← Quiver.Hom.comp_toLoc, ← op_comp])))]
+  simp only [Cat.Hom.inv_hom_id_toNatTrans_app]
   erw [Category.comp_id]
 
 set_option backward.isDefEq.respectTransparency false in
@@ -278,11 +269,7 @@ lemma isoMapOfCommSq₃_comp (i₁ i₂ i₃ : ι)
       (f := ((F.comp Adj.forget₁).mapComp' (f i₂).op.toLoc
         (sq₃ i₁ i₂ i₃).p₂.op.toLoc
         ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc _).hom.toNatTrans.app M)]
-  erw [Iso.hom_inv_id_app (Cat.Hom.toNatIso
-    ((F.comp Adj.forget₁).mapComp' (f i₂).op.toLoc
-      (sq₃ i₁ i₂ i₃).p₂.op.toLoc
-      ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-      (by simp [← Quiver.Hom.comp_toLoc, ← op_comp, hw₁₂])))]
+  simp only [Cat.Hom.hom_inv_id_toNatTrans_app]
   erw [Category.id_comp]
 
 set_option backward.isDefEq.respectTransparency false in

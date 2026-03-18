@@ -126,9 +126,7 @@ lemma pullHom_isoMapOfCommSq_diagonal
     (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])).hom.toNatTrans.app _)]
   simp only [Category.assoc, ← reassoc_of% Cat.Hom₂.comp_app,
     Iso.inv_hom_id, Cat.Hom₂.id_app, Category.id_comp, Category.comp_id]
-  erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso
-    ((F.comp Adj.forget₁).mapComp' (sq i i).p₂.op.toLoc p.op.toLoc (𝟙 (X i)).op.toLoc
-      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])))]
+  simp only [Cat.Hom.inv_hom_id_toNatTrans_app]
   erw [Category.comp_id]
   rw [Functor.map_comp]
   have exp₁ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
@@ -152,10 +150,7 @@ lemma pullHom_isoMapOfCommSq_diagonal
             Category.id_comp])).hom.toNatTrans.app
     ((F.map (f i).op.toLoc).r.toFunctor.obj M)) h_eq
   simp only [Category.assoc] at h_cleaned
-  erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso ((F.comp Adj.forget₁).mapComp'
-    ((sq i i).p₁ ≫ f i).op.toLoc p.op.toLoc (f i).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, ← Category.assoc, h₁,
-            Category.id_comp])))] at h_cleaned
+  simp only [Cat.Hom.inv_hom_id_toNatTrans_app] at h_cleaned
   erw [Category.comp_id, Category.comp_id] at h_cleaned
   rw [← cancel_epi (((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
     (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).hom.toNatTrans.app
@@ -164,9 +159,7 @@ lemma pullHom_isoMapOfCommSq_diagonal
   simp only [← Category.assoc]
   rw [h_cleaned]
   simp only [Category.assoc, ← Functor.map_comp]
-  erw [Iso.inv_hom_id_app (Cat.Hom.toNatIso ((F.comp Adj.forget₁).mapComp'
-    (f i).op.toLoc (sq i i).p₂.op.toLoc ((sq i i).p₁ ≫ f i).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i i).condition.symm])))]
+  simp only [Cat.Hom.inv_hom_id_toNatTrans_app]
   erw [Functor.map_id, Category.comp_id]
   rw [show ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
         (𝟙 (X i)).op.toLoc _).inv.toNatTrans.app
