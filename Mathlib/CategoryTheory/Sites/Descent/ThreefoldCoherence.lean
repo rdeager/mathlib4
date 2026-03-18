@@ -113,9 +113,9 @@ lemma pullHom_isoMapOfCommSq (i₁ i₂ i₃ : ι)
     ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq₃ sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M := by
   -- Expand both sides via isoMapOfCommSq_eq
   rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq sq i₁ i₂)
-    ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]),
+    ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc (comp_op_toLoc _ _),
     (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃ sq sq₃ i₁ i₂ i₃)
-    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])]
+    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc (comp_op_toLoc _ _)]
   simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app]
   -- Unfold pullHom, distribute
   dsimp only [LocallyDiscreteOpToCat.pullHom]
@@ -129,9 +129,9 @@ lemma pullHom_isoMapOfCommSq (i₁ i₂ i₃ : ι)
     (f i₁).op.toLoc (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc
     ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
     ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]) M
+    (comp_op_toLoc _ _)
+    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
+    (comp_op_toLoc _ _) M
   -- Use mapComp'₀₂₃_hom_app for right pair (dual telescope):
   -- p₁₂*(mc'(fi₂, sq.p₂, c).hom) ≫ mc'(sq.p₂, p₁₂, sq₃.p₂).inv =
   --   mc'(c, p₁₂, c').inv ≫ mc'(fi₂, sq₃.p₂, c').hom
@@ -139,9 +139,9 @@ lemma pullHom_isoMapOfCommSq (i₁ i₂ i₃ : ι)
     (f i₂).op.toLoc (sq i₁ i₂).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc
     ((sq i₁ i₂).p₁ ≫ f i₁).op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
     ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i₁ i₂).condition.symm])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₂])
-    (by simp [← Quiver.Hom.comp_toLoc, ← op_comp])
+    (by rw [comp_op_toLoc, (sq i₁ i₂).condition.symm])
+    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₂_p₂])
+    (by simp [comp_op_toLoc])
     M
   -- Now use exp₁ and exp₂ to transform the RHS into the LHS.
   -- exp₁: mc'(fi₁, sq₃.p₁, c').inv = [terms 1-2] ≫ mc'(c, p₁₂, c').inv
@@ -167,9 +167,9 @@ lemma pullHom_isoMapOfCommSq' (i₁ i₂ i₃ : ι)
       (sq₃ i₁ i₂ i₃).p₂₃ (sq₃ i₁ i₂ i₃).p₂ (sq₃ i₁ i₂ i₃).p₃ =
     ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq₃' sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M := by
   rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq sq i₂ i₃)
-    ((sq i₂ i₃).p₁ ≫ f i₂).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]),
+    ((sq i₂ i₃).p₁ ≫ f i₂).op.toLoc (comp_op_toLoc _ _),
     (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃' sq sq₃ i₁ i₂ i₃)
-    ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])]
+    ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc (comp_op_toLoc _ _)]
   simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app]
   dsimp only [LocallyDiscreteOpToCat.pullHom]
   simp only [Functor.map_comp, Category.assoc]
@@ -177,16 +177,16 @@ lemma pullHom_isoMapOfCommSq' (i₁ i₂ i₃ : ι)
     (f i₂).op.toLoc (sq i₂ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₂₃.op.toLoc
     ((sq i₂ i₃).p₁ ≫ f i₂).op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
     ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₂₃_p₂])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]) M
+    (comp_op_toLoc _ _)
+    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₂₃_p₂])
+    (comp_op_toLoc _ _) M
   have exp₂ := (F.comp Adj.forget₁).mapComp'₀₂₃_inv_app
     (f i₃).op.toLoc (sq i₂ i₃).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₂₃.op.toLoc
     ((sq i₂ i₃).p₁ ≫ f i₂).op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc
     ((sq₃ i₁ i₂ i₃).p₂ ≫ f i₂).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i₂ i₃).condition.symm])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₂₃_p₃])
-    (by simp [← Quiver.Hom.comp_toLoc, ← op_comp])
+    (by rw [comp_op_toLoc, (sq i₂ i₃).condition.symm])
+    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₂₃_p₃])
+    (by simp [comp_op_toLoc])
     M
   conv_rhs => rw [exp₁]
   simp only [Category.assoc]
@@ -205,9 +205,9 @@ lemma pullHom_isoMapOfCommSq'' (i₁ i₂ i₃ : ι)
       (sq₃ i₁ i₂ i₃).p₁₃ (sq₃ i₁ i₂ i₃).p₁ (sq₃ i₁ i₂ i₃).p₃ =
     ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq₃'' sq sq₃ i₁ i₂ i₃)).hom.toNatTrans.app M := by
   rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq sq i₁ i₃)
-    ((sq i₁ i₃).p₁ ≫ f i₁).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]),
+    ((sq i₁ i₃).p₁ ≫ f i₁).op.toLoc (comp_op_toLoc _ _),
     (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃'' sq sq₃ i₁ i₂ i₃)
-    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])]
+    ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc (comp_op_toLoc _ _)]
   simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app]
   dsimp only [LocallyDiscreteOpToCat.pullHom]
   simp only [Functor.map_comp, Category.assoc]
@@ -215,16 +215,16 @@ lemma pullHom_isoMapOfCommSq'' (i₁ i₂ i₃ : ι)
     (f i₁).op.toLoc (sq i₁ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₃.op.toLoc
     ((sq i₁ i₃).p₁ ≫ f i₁).op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
     ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₃_p₁])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]) M
+    (comp_op_toLoc _ _)
+    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₃_p₁])
+    (comp_op_toLoc _ _) M
   have exp₂ := (F.comp Adj.forget₁).mapComp'₀₂₃_inv_app
     (f i₃).op.toLoc (sq i₁ i₃).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁₃.op.toLoc
     ((sq i₁ i₃).p₁ ≫ f i₁).op.toLoc (sq₃ i₁ i₂ i₃).p₃.op.toLoc
     ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i₁ i₃).condition.symm])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₃_p₃])
-    (by simp [← Quiver.Hom.comp_toLoc, ← op_comp])
+    (by rw [comp_op_toLoc, (sq i₁ i₃).condition.symm])
+    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₃_p₃])
+    (by simp [comp_op_toLoc])
     M
   conv_rhs => rw [exp₁]
   simp only [Category.assoc]
@@ -254,13 +254,13 @@ lemma isoMapOfCommSq₃_comp (i₁ i₂ i₃ : ι)
     (sq₃ i₁ i₂ i₃).w₂.trans (sq₃ i₁ i₂ i₃).w₁.symm
   rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃ sq sq₃ i₁ i₂ i₃)
     ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp]),
+    (comp_op_toLoc _ _),
     (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃' sq sq₃ i₁ i₂ i₃)
     ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, hw₁₂]),
+    (by rw [comp_op_toLoc, hw₁₂]),
     (F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq₃'' sq sq₃ i₁ i₂ i₃)
     ((sq₃ i₁ i₂ i₃).p₁ ≫ f i₁).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])]
+    (comp_op_toLoc _ _)]
   simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app, Category.assoc]
   -- Now the middle pair uses the SAME mapComp': hom ≫ inv = 𝟙
   -- Use slice_rhs or direct reassoc to cancel the middle pair
@@ -296,7 +296,7 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
   conv_lhs =>
     rw [← Category.assoc, ← (F.comp Adj.forget₁).mapComp'_hom_naturality
       (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
-      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₁]) (D.hom i₁ i₂)]
+      (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₂_p₁]) (D.hom i₁ i₂)]
   simp only [Category.assoc]
   -- Push all ε past mc'_inv
   simp only [mapComp'_inv_naturality]
@@ -307,18 +307,18 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
         (sq₃ i₁ i₂ i₃).p₂₃.op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc _).hom.toNatTrans.app _),
       ← (F.comp Adj.forget₁).mapComp'_hom_naturality
         (sq i₂ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₂₃.op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
-        (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₂₃_p₂]) (D.hom i₂ i₃)]
+        (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₂₃_p₂]) (D.hom i₂ i₃)]
   simp only [Category.assoc]
   -- Push D.hom₁₃ past mc'₅ on RHS
   conv_rhs =>
     rw [← Category.assoc, ← (F.comp Adj.forget₁).mapComp'_hom_naturality
       (sq i₁ i₃).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₃.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
-      (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₃_p₁]) (D.hom i₁ i₃)]
+      (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₃_p₁]) (D.hom i₁ i₃)]
   simp only [Category.assoc]
   -- Push D.hom₂₃ back through mc'₂.inv on LHS (reverse naturality)
   rw [← (F.comp Adj.forget₁).mapComp'_inv_naturality_assoc
     (sq i₁ i₂).p₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₂.op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₂]) (D.hom i₂ i₃)]
+    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₂_p₂]) (D.hom i₂ i₃)]
   -- Fold ε₂ ≫ D.hom₂₃ inside p₁₂*(sq.p₂*(...))
   conv_lhs =>
     rw [← Functor.map_comp_assoc
@@ -361,7 +361,7 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
   -- Push l₁(r₂(D.hom₂₃)) from p₁₂*(sq.p₁*(...)) past mc'₁.hom to p₁ level
   have key₁ := (F.comp Adj.forget₁).mapComp'_hom_naturality
     (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
+    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
     (a := ((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
       ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃)))
   erw [show ((F.comp Adj.forget₁).mapComp' (sq i₁ i₂).p₁.op.toLoc
@@ -385,7 +385,7 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
   -- Push l₁(η₂) past mc'₁.hom to p₁₂ level
   have key₂ := (F.comp Adj.forget₁).mapComp'_hom_naturality
     (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
+    (by rw [comp_op_toLoc, (sq₃ i₁ i₂ i₃).p₁₂_p₁])
     (a := ((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
       ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
         ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃))))

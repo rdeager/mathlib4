@@ -209,7 +209,7 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Obj
     conv_lhs =>
       rw [← Category.assoc, ← (F.comp Adj.forget₁).mapComp'_hom_naturality
         (sq i i).p₁.op.toLoc p.op.toLoc (𝟙 (X i)).op.toLoc
-        (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁]) (D.hom i i)]
+        (by rw [comp_op_toLoc, h₁]) (D.hom i i)]
     simp only [Category.assoc]
     set_option backward.isDefEq.respectTransparency false in
     simp only [mapComp'_inv_naturality]
@@ -217,14 +217,14 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Obj
     -- The middle is pullHom_isoMapOfCommSq_diagonal
     suffices h_mid :
         ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
-          (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).hom.toNatTrans.app
+          (𝟙 (X i)).op.toLoc (by rw [comp_op_toLoc, h₁])).hom.toNatTrans.app
           ((F.map (f i).op.toLoc).l.toFunctor.obj
             ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) ≫
         ((F.comp Adj.forget₁).map p.op.toLoc).toFunctor.map
           (((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i i)).hom.toNatTrans.app
             ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) ≫
         ((F.comp Adj.forget₁).mapComp' (sq i i).p₂.op.toLoc p.op.toLoc
-          (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])).inv.toNatTrans.app
+          (𝟙 (X i)).op.toLoc (by rw [comp_op_toLoc, h₂])).inv.toNatTrans.app
           (((F.comp Adj.forget₁).map (f i).op.toLoc).toFunctor.obj
             ((F.map (f i).op.toLoc).r.toFunctor.obj (D.obj i))) =
         𝟙 _ by
@@ -349,15 +349,15 @@ noncomputable def DescentData'.toDescentDataAsCoalgebraObj
     rw [Functor.map_comp_assoc, Functor.map_comp_assoc] at h_ps
     -- Push backward.hom past mc'₁ (bridge defeq for rewriter, then naturality)
     rw [show ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
-          (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).hom.toNatTrans.app
+          (𝟙 (X i)).op.toLoc (by rw [comp_op_toLoc, h₁])).hom.toNatTrans.app
           (D.obj i) =
         ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
-          (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).hom.toNatTrans.app
+          (𝟙 (X i)).op.toLoc (by rw [comp_op_toLoc, h₁])).hom.toNatTrans.app
           (((F.comp Adj.forget₁).map (𝟙 (X i)).op.toLoc).toFunctor.obj (D.obj i))
         from rfl] at h_ps
     rw [← Category.assoc, ← (F.comp Adj.forget₁).mapComp'_hom_naturality
         (sq i i).p₁.op.toLoc p.op.toLoc (𝟙 (X i)).op.toLoc
-        (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])
+        (by rw [comp_op_toLoc, h₁])
         ((F.map (sq i i).p₁.op.toLoc).adj.unit.toNatTrans.app (D.obj i) ≫
          (F.map (sq i i).p₁.op.toLoc).r.toFunctor.map (D.hom i i) ≫
          inv (baseChangeApp F sq i i (D.obj i)))] at h_ps

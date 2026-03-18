@@ -38,6 +38,19 @@ namespace CategoryTheory
 
 open Bicategory Opposite Limits
 
+namespace LocallyDiscreteOpToCat
+
+variable {C : Type u} [Category.{v} C]
+
+/-- Composition of `op.toLoc` morphisms in `LocallyDiscrete Cᵒᵖ` reverses the order. -/
+lemma comp_op_toLoc {A B D : C} (g : A ⟶ B) (h : B ⟶ D) :
+    h.op.toLoc ≫ g.op.toLoc = (g ≫ h).op.toLoc := by
+  rw [← Quiver.Hom.comp_toLoc, ← op_comp]
+
+end LocallyDiscreteOpToCat
+
+open LocallyDiscreteOpToCat
+
 namespace Pseudofunctor
 
 variable {C : Type u} [Category.{v} C]
@@ -85,19 +98,19 @@ lemma pullHom_isoMapOfCommSq_diagonal
     (h₁ : p ≫ (sq i i).p₁ = 𝟙 (X i)) (h₂ : p ≫ (sq i i).p₂ = 𝟙 (X i))
     (M : (F.obj (.mk (op (X i)))).obj) :
     ((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
-      (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).hom.toNatTrans.app
+      (𝟙 (X i)).op.toLoc (by rw [comp_op_toLoc, h₁])).hom.toNatTrans.app
       ((F.map (f i).op.toLoc).l.toFunctor.obj
         ((F.map (f i).op.toLoc).r.toFunctor.obj M)) ≫
     ((F.comp Adj.forget₁).map p.op.toLoc).toFunctor.map
       (((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i i)).hom.toNatTrans.app
         ((F.map (f i).op.toLoc).r.toFunctor.obj M)) ≫
     ((F.comp Adj.forget₁).mapComp' (sq i i).p₂.op.toLoc p.op.toLoc
-      (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])).inv.toNatTrans.app
+      (𝟙 (X i)).op.toLoc (by rw [comp_op_toLoc, h₂])).inv.toNatTrans.app
       (((F.comp Adj.forget₁).map (f i).op.toLoc).toFunctor.obj
         ((F.map (f i).op.toLoc).r.toFunctor.obj M)) =
     𝟙 _ := by
   rw [(F.comp Adj.forget₁).isoMapOfCommSq_eq (pbCommSq sq i i)
-    ((sq i i).p₁ ≫ f i).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])]
+    ((sq i i).p₁ ≫ f i).op.toLoc (comp_op_toLoc _ _)]
   simp only [Iso.trans_hom, Iso.symm_hom, Cat.Hom₂.comp_app]
   rw [Functor.map_comp_assoc]
   conv_lhs =>
@@ -121,9 +134,9 @@ lemma pullHom_isoMapOfCommSq_diagonal
           ((F.map (f i).op.toLoc).r.toFunctor.obj M)) from
     (Functor.map_comp _ _ _).symm]
   rw [← cancel_epi (((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
-    (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).inv.toNatTrans.app _),
+    (𝟙 (X i)).op.toLoc (by rw [comp_op_toLoc, h₁])).inv.toNatTrans.app _),
     ← cancel_mono (((F.comp Adj.forget₁).mapComp' (sq i i).p₂.op.toLoc p.op.toLoc
-    (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])).hom.toNatTrans.app _)]
+    (𝟙 (X i)).op.toLoc (by rw [comp_op_toLoc, h₂])).hom.toNatTrans.app _)]
   simp only [Category.assoc, ← reassoc_of% Cat.Hom₂.comp_app,
     Iso.inv_hom_id, Cat.Hom₂.id_app, Category.id_comp, Category.comp_id]
   simp only [Cat.Hom.inv_hom_id_toNatTrans_app]
@@ -132,28 +145,28 @@ lemma pullHom_isoMapOfCommSq_diagonal
   have exp₁ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
     (f i).op.toLoc (sq i i).p₁.op.toLoc p.op.toLoc
     ((sq i i).p₁ ≫ f i).op.toLoc (𝟙 (X i)).op.toLoc (f i).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, Category.id_comp])
+    (comp_op_toLoc _ _)
+    (by rw [comp_op_toLoc, h₁])
+    (by rw [comp_op_toLoc, Category.id_comp])
     ((F.map (f i).op.toLoc).r.toFunctor.obj M)
   have exp₂ := (F.comp Adj.forget₁).mapComp'₀₁₃_inv_app
     (f i).op.toLoc (sq i i).p₂.op.toLoc p.op.toLoc
     ((sq i i).p₁ ≫ f i).op.toLoc (𝟙 (X i)).op.toLoc (f i).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, (sq i i).condition.symm])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₂])
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, Category.id_comp])
+    (by rw [comp_op_toLoc, (sq i i).condition.symm])
+    (by rw [comp_op_toLoc, h₂])
+    (by rw [comp_op_toLoc, Category.id_comp])
     ((F.map (f i).op.toLoc).r.toFunctor.obj M)
   have h_eq := exp₁.symm.trans exp₂
   have h_cleaned := congr_arg (· ≫ ((F.comp Adj.forget₁).mapComp' ((sq i i).p₁ ≫ f i).op.toLoc
     p.op.toLoc (f i).op.toLoc
-    (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, ← Category.assoc, h₁,
+    (by rw [comp_op_toLoc, ← Category.assoc, h₁,
             Category.id_comp])).hom.toNatTrans.app
     ((F.map (f i).op.toLoc).r.toFunctor.obj M)) h_eq
   simp only [Category.assoc] at h_cleaned
   simp only [Cat.Hom.inv_hom_id_toNatTrans_app] at h_cleaned
   erw [Category.comp_id, Category.comp_id] at h_cleaned
   rw [← cancel_epi (((F.comp Adj.forget₁).mapComp' (sq i i).p₁.op.toLoc p.op.toLoc
-    (𝟙 (X i)).op.toLoc (by rw [← Quiver.Hom.comp_toLoc, ← op_comp, h₁])).hom.toNatTrans.app
+    (𝟙 (X i)).op.toLoc (by rw [comp_op_toLoc, h₁])).hom.toNatTrans.app
     (((F.comp Adj.forget₁).map (f i).op.toLoc).toFunctor.obj
       ((F.map (f i).op.toLoc).r.toFunctor.obj M)))]
   simp only [← Category.assoc]
