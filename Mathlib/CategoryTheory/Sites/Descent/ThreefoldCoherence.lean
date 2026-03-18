@@ -299,13 +299,7 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
   erw [← ((F.comp Adj.forget₁).isoMapOfCommSq (pbCommSq sq i₁ i₂)).hom.toNatTrans.naturality
     ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃))]
   -- Convert Cat composition form to explicit functor application
-  erw [show ((F.comp Adj.forget₁).map (f i₁).op.toLoc ≫
-    (F.comp Adj.forget₁).map (sq i₁ i₂).p₁.op.toLoc).toFunctor.map
-      ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃)) =
-    ((F.comp Adj.forget₁).map (sq i₁ i₂).p₁.op.toLoc).toFunctor.map
-      (((F.comp Adj.forget₁).map (f i₁).op.toLoc).toFunctor.map
-        ((F.map (f i₂).op.toLoc).r.toFunctor.map (D.hom i₂ i₃))) from rfl]
-  simp only [Functor.map_comp, Category.assoc]
+  simp only [Cat.Hom.comp_toFunctor_map, Functor.map_comp, Category.assoc]
   -- Push l₁(r₂(D.hom₂₃)) from p₁₂*(sq.p₁*(...)) past mc'₁.hom to p₁ level
   have key₁ := (F.comp Adj.forget₁).mapComp'_hom_naturality
     (sq i₁ i₂).p₁.op.toLoc (sq₃ i₁ i₂ i₃).p₁₂.op.toLoc (sq₃ i₁ i₂ i₃).p₁.op.toLoc
@@ -367,15 +361,7 @@ lemma forwardHom_cocycle (D : F.DescentDataAsCoalgebra f) (i₁ i₂ i₃ : ι) 
     ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
       ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))]
   -- Convert Cat composition form
-  erw [show ((F.comp Adj.forget₁).map (f i₂).op.toLoc ≫
-    (F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map
-      ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
-        ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃))) =
-    ((F.comp Adj.forget₁).map (sq i₁ i₂).p₂.op.toLoc).toFunctor.map
-      (((F.comp Adj.forget₁).map (f i₂).op.toLoc).toFunctor.map
-        ((F.map (f i₂).op.toLoc).adj.unit.toNatTrans.app
-          ((F.map (f i₃).op.toLoc).r.toFunctor.obj (D.obj i₃)))) from rfl]
-  simp only [Functor.map_comp, Category.assoc]
+  simp only [Cat.Hom.comp_toFunctor_map, Functor.map_comp, Category.assoc]
   -- Step 20: Fold l₂(η₂) ≫ ε₂ inside sq.p₂* and apply triangle identity
   conv_lhs =>
     rw [← Functor.map_comp_assoc
