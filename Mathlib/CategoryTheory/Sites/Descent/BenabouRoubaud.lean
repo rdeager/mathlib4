@@ -5,7 +5,7 @@ Authors: Richard Eager
 -/
 module
 
-public import Mathlib.CategoryTheory.Sites.Descent.DiagonalCoherence
+public import Mathlib.CategoryTheory.Sites.Descent.ThreefoldCoherence
 
 /-!
 # Bénabou–Roubaud: descent data as coalgebras
@@ -239,8 +239,7 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Obj
     -- Apply the extracted diagonal coherence lemma
     exact pullHom_isoMapOfCommSq_diagonal sq i p h₁ h₂ (D.obj i)
   -- [B-R Theorem, cocycle] Follows from coalgebra coassociativity
-  pullHom'_hom_comp i₁ i₂ i₃ := by
-    sorry
+  pullHom'_hom_comp i₁ i₂ i₃ := pullHom'_forwardHom_comp F sq sq₃ D i₁ i₂ i₃
 
 set_option backward.isDefEq.respectTransparency false in
 variable (F) in

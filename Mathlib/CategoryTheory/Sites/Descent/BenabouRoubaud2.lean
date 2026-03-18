@@ -110,8 +110,7 @@ noncomputable def DescentDataAsCoalgebra.toDescentData'Obj_v2
       rw [← Functor.map_comp, D.counit, Functor.map_id]
     -- Apply the extracted diagonal coherence lemma
     exact pullHom_isoMapOfCommSq_diagonal sq i p h₁ h₂ (D.obj i)
-  pullHom'_hom_comp i₁ i₂ i₃ := by
-    sorry
+  pullHom'_hom_comp i₁ i₂ i₃ := pullHom'_forwardHom_comp F sq sq₃ D i₁ i₂ i₃
 
 set_option backward.isDefEq.respectTransparency false in
 variable (F) in
